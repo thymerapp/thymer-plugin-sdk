@@ -326,7 +326,7 @@ class DateTime {
      * @public
      * Create a new DateTime object.
      *
-     * @param {Date|DateTimeValueObject|undefined} value -
+     * @param {Date|DateTimeValue|undefined} value -
      *   - A Date object in browser's local timezone
      *   - A DateTimeValue object
      *   - undefined to use the current date and time
@@ -338,19 +338,19 @@ class DateTime {
      * // To get a DateTime from a property, use .datetime() instead:
      * const dt3 = record.prop("Due Date").datetime();
      */
-    constructor(value: Date | DateTimeValueObject | undefined);
+    constructor(value: Date | DateTimeValue | undefined);
 
     /**
      * @public
      * Get the DateTimeValue that can be used with property.set().
      *
-     * @returns {import("../../shared/datetime.js").DateTimeValue} - DateTimeValue object
+     * @returns {DateTimeValue} - DateTimeValue object
      *
      * @example
      * const dt = new DateTime(new Date());
      * record.prop("Due Date").set(dt.value());
      */
-    public value(): any;
+    public value(): DateTimeValue;
     /**
      * @public
      * Convert to a JavaScript Date in the browser's local timezone.
@@ -395,14 +395,10 @@ class DateTime {
     public setRangeEnd(endDateTime: DateTime | null): this;
 }
 
-type DateTimeValueObject = {
-    d: string;
-    t?: {
-        t: string;
-        tz: any;
-    };
-    r?: DateTimeValueObject;
-};
+/**
+ * Opaque type for datetime values. Use the DateTime class methods to work with these.
+ */
+type DateTimeValue = object;
 
 /** @type {EnumColors} */
 const ENUM_COLORS: EnumColors;
