@@ -733,6 +733,8 @@ const PLUGIN_LINE_ITEM_TYPE_TRANSCLUSION: "transclusion";
 
 const PLUGIN_LINE_ITEM_TYPE_ULIST: "ulist";
 
+type PluginBlockStyle = "" | "quote" | "warning" | "note" | "row";
+
 class PluginCollectionAPI extends PluginPluginAPIBase {
     /**
      * @public
@@ -961,8 +963,19 @@ class PluginGlobalPluginAPI extends PluginPluginAPIBase {
     public getName(): string;
 }
 
+type PluginHighlightLanguage = "bash" | "c" | "coffeescript" | "cpp" | "csharp" | "css" | "dart" | "diff" | "go" | "graphql" | "ini" | "java" | "javascript" | "json" | "kotlin" | "less" | "lua" | "makefile" | "markdown" | "objectivec" | "perl" | "php" | "php-template" | "plaintext" | "powershell" | "python" | "python-repl" | "r" | "ruby" | "rust" | "scala" | "scss" | "shell" | "sql" | "swift" | "typescript" | "vbnet" | "wasm" | "xml" | "yaml";
+
 /**
  * @typedef {{ [key: string]: any }} PluginLineItemProps
+ */
+/**
+ * @typedef {'flames'|'outline'|'link-icons'|'link-buttons'} PluginLinkStyle
+ */
+/**
+ * @typedef {'bash'|'c'|'coffeescript'|'cpp'|'csharp'|'css'|'dart'|'diff'|'go'|'graphql'|'ini'|'java'|'javascript'|'json'|'kotlin'|'less'|'lua'|'makefile'|'markdown'|'objectivec'|'perl'|'php'|'php-template'|'plaintext'|'powershell'|'python'|'python-repl'|'r'|'ruby'|'rust'|'scala'|'scss'|'shell'|'sql'|'swift'|'typescript'|'vbnet'|'wasm'|'xml'|'yaml'} PluginHighlightLanguage
+ */
+/**
+ * @typedef {''|'quote'|'warning'|'note'|'row'} PluginBlockStyle
  */
 class PluginLineItem {
 
@@ -1006,6 +1019,95 @@ class PluginLineItem {
      * @returns {string?}
      */
     getUpdatedByGuid(): string | null;
+    /**
+     * @public
+     * Set a single meta property on the line item.
+     *
+     * @param {string} prop - The property key
+     * @param {string|number|null} val - The value to set, or null to delete the property
+     */
+    public setMetaProperty(prop: string, val: string | number | null): void;
+    /**
+     * @public
+     * Set multiple meta properties on the line item.
+     *
+     * - null value to delete a property
+     * - existing properties are overwritten
+     * - properties for which no keys are provided are not touched
+     *
+     * @param {Record<string, any>} props - Object with property key-value pairs
+     */
+    public setMetaProperties(props: Record<string, any>): void;
+    /**
+     * @public
+     * Set the heading size (1-6) for heading line items.
+     *
+     * @param {number} size - Heading size from 1 (largest) to 6 (smallest)
+     */
+    public setHeadingSize(size: number): void;
+    /**
+     * @public
+     * Get the heading size for heading line items.
+     *
+     * @returns {number} Heading size (1-6), defaults to 1
+     */
+    public getHeadingSize(): number;
+    /**
+     * @public
+     * Set the syntax highlighting language for code blocks.
+     *
+     * @param {PluginHighlightLanguage|null} language - Language identifier, or null to remove highlighting
+     */
+    public setHighlightLanguage(language: PluginHighlightLanguage | null): void;
+    /**
+     * @public
+     * Get the syntax highlighting language for code blocks.
+     *
+     * @returns {PluginHighlightLanguage|null} Language identifier or null
+     */
+    public getHighlightLanguage(): PluginHighlightLanguage | null;
+    /**
+     * @public
+     * Set the block style.
+     *
+     * @param {PluginBlockStyle|null} style - Block style, or null to remove
+     */
+    public setBlockStyle(style: PluginBlockStyle | null): void;
+    /**
+     * @public
+     * Get the block style.
+     *
+     * @returns {PluginBlockStyle|null} Block style or null
+     */
+    public getBlockStyle(): PluginBlockStyle | null;
+    /**
+     * @public
+     * Set the icon for a heading line item.
+     *
+     * @param {string|null} icon - Icon identifier (e.g. "ti-star"), or null to remove
+     */
+    public setIcon(icon: string | null): void;
+    /**
+     * @public
+     * Get the icon for a line item.
+     *
+     * @returns {string|null} Icon identifier or null
+     */
+    public getIcon(): string | null;
+    /**
+     * @public
+     * Set the link style for heading line items.
+     *
+     * @param {PluginLinkStyle|null} style - Link style
+     */
+    public setLinkStyle(style: PluginLinkStyle | null): void;
+    /**
+     * @public
+     * Get the link style.
+     *
+     * @returns {PluginLinkStyle|null} Link style or null
+     */
+    public getLinkStyle(): PluginLinkStyle | null;
 }
 
 type PluginLineItemProps = {
@@ -1043,6 +1145,8 @@ class PluginLineItemSegment {
 type PluginLineItemSegmentType = "text" | "bold" | "italic" | "code" | "link" | "icon" | "hashtag" | "mention" | "ref" | "linkobj" | "datetime";
 
 type PluginLineItemType = "app" | "gplugin" | "document" | "empty" | "error" | "br" | "text" | "task" | "heading" | "ascii-banner" | "quote" | "block" | "olist" | "ulist" | "image" | "file" | "ref" | "table" | "table-cell" | "table-row" | "transclusion" | "query" | "media";
+
+type PluginLinkStyle = "flames" | "outline" | "link-icons" | "link-buttons";
 
 type PluginNavigationButton = {
     /**
