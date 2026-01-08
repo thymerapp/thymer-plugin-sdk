@@ -103,6 +103,27 @@ class CollectionPlugin {
     /**
      * @public
      *
+     * Sets a custom function that computes the title of records in this collection.
+     * The function will be called whenever the title needs to be displayed.
+     *
+     * @example
+     * // Simple custom title based on a property
+     * this.customizeRecordTitle(({record}) => {
+     *     const title = record.text("Title"); // gets the built-in title property
+     *     const rating = record.prop("Rating").choiceLabel();
+     *     return title + " - " + rating;
+     * });
+     *
+     * @param {({record}: {record: PluginRecord}) => string|null} fn - Function that computes the record title.
+     *   Return a string for a custom title, or null/undefined to use the default title.
+     */
+    public customizeRecordTitle(fn: ({ record }: {
+        record: PluginRecord;
+    }) => string | null): void;
+    customRecordTitleFunction: (row: any) => string;
+    /**
+     * @public
+     *
      * Adds a navigation button to the collection's panel navigation bar
      * @param {Object} options Navigation button options
      * @param {string} [options.label] Text label to display in the navigation button
@@ -1131,6 +1152,10 @@ type PluginHighlightLanguage = "bash" | "c" | "coffeescript" | "cpp" | "csharp" 
 /**
  * @typedef {''|'quote'|'warning'|'note'|'row'} PluginBlockStyle
  */
+/**
+ * Represents a line item within a record. Setters return `Promise<boolean>`.
+ * Operations are processed in order, so you can await only the last one.
+ */
 class PluginLineItem {
 
     /** @type {string} */
@@ -1154,8 +1179,9 @@ class PluginLineItem {
      * Set the segments of the line item
      *
      * @param {PluginLineItemSegment[]} segments
+     * @returns {Promise<boolean>} true if successful
      */
-    public setSegments(segments: PluginLineItemSegment[]): void;
+    public setSegments(segments: PluginLineItemSegment[]): Promise<boolean>;
 
     /**
      * @returns {Date?}
@@ -1179,8 +1205,9 @@ class PluginLineItem {
      *
      * @param {string} prop - The property key
      * @param {string|number|null} val - The value to set, or null to delete the property
+     * @returns {Promise<boolean>} true if successful
      */
-    public setMetaProperty(prop: string, val: string | number | null): void;
+    public setMetaProperty(prop: string, val: string | number | null): Promise<boolean>;
     /**
      * @public
      * Set multiple meta properties on the line item.
@@ -1190,15 +1217,17 @@ class PluginLineItem {
      * - properties for which no keys are provided are not touched
      *
      * @param {Record<string, any>} props - Object with property key-value pairs
+     * @returns {Promise<boolean>} true if successful
      */
-    public setMetaProperties(props: Record<string, any>): void;
+    public setMetaProperties(props: Record<string, any>): Promise<boolean>;
     /**
      * @public
      * Set the heading size (1-6) for heading line items.
      *
      * @param {number} size - Heading size from 1 (largest) to 6 (smallest)
+     * @returns {Promise<boolean>} true if successful
      */
-    public setHeadingSize(size: number): void;
+    public setHeadingSize(size: number): Promise<boolean>;
     /**
      * @public
      * Get the heading size for heading line items.
@@ -1211,8 +1240,9 @@ class PluginLineItem {
      * Set the syntax highlighting language for code blocks.
      *
      * @param {PluginHighlightLanguage|null} language - Language identifier, or null to remove highlighting
+     * @returns {Promise<boolean>} true if successful
      */
-    public setHighlightLanguage(language: PluginHighlightLanguage | null): void;
+    public setHighlightLanguage(language: PluginHighlightLanguage | null): Promise<boolean>;
     /**
      * @public
      * Get the syntax highlighting language for code blocks.
@@ -1225,8 +1255,9 @@ class PluginLineItem {
      * Set the block style.
      *
      * @param {PluginBlockStyle|null} style - Block style, or null to remove
+     * @returns {Promise<boolean>} true if successful
      */
-    public setBlockStyle(style: PluginBlockStyle | null): void;
+    public setBlockStyle(style: PluginBlockStyle | null): Promise<boolean>;
     /**
      * @public
      * Get the block style.
@@ -1239,8 +1270,9 @@ class PluginLineItem {
      * Set the icon for a heading line item.
      *
      * @param {string|null} icon - Icon identifier (e.g. "ti-star"), or null to remove
+     * @returns {Promise<boolean>} true if successful
      */
-    public setIcon(icon: string | null): void;
+    public setIcon(icon: string | null): Promise<boolean>;
     /**
      * @public
      * Get the icon for a line item.
@@ -1253,8 +1285,9 @@ class PluginLineItem {
      * Set the link style for heading line items.
      *
      * @param {PluginLinkStyle|null} style - Link style
+     * @returns {Promise<boolean>} true if successful
      */
-    public setLinkStyle(style: PluginLinkStyle | null): void;
+    public setLinkStyle(style: PluginLinkStyle | null): Promise<boolean>;
     /**
      * @public
      * Get the link style.
@@ -1262,6 +1295,16 @@ class PluginLineItem {
      * @returns {PluginLinkStyle|null} Link style or null
      */
     public getLinkStyle(): PluginLinkStyle | null;
+    /**
+     * @public
+     * Delete this line item from the record.
+     *
+     * Note: If the item has children, the deletion will be rejected by the backend.
+     * Delete children first before deleting their parent.
+     *
+     * @returns {Promise<boolean>} true if deleted, false if deletion failed (e.g., has children)
+     */
+    public delete(): Promise<boolean>;
 }
 
 type PluginLineItemProps = {
@@ -1460,11 +1503,51 @@ class PluginPluginAPIBase {
     guid: string;
     collectionRoot: any;
 
-
+    /**
+     * @public
+     * Preview a plugin with the given code and config. Hot reloads the plugin without saving.
+     *
+     * @param {PluginConfiguration} conf
+     * @param {string} code
+     * @param {boolean} showEditDialog - if true, open the code editor for the user to review
+     */
+    public previewPlugin(conf: PluginConfiguration, code: string, showEditDialog: boolean): void;
     trashPlugin(): void;
     untrashPlugin(): void;
-
-
+    /**
+     * @public
+     * Discard preview and reload the plugin with the saved config and code.
+     */
+    public discardPreviewPlugin(): void;
+    /**
+     * @public
+     * Save and reload the plugin with the given code and config.
+     *
+     * Plugin is reloaded immediately; resolves when backend persistence completes.
+     * After save UI updates and component reloads (when necessary) are scheduled but not
+     * yet processed.
+     *
+     * @param {PluginConfiguration} conf
+     * @param {string} code
+     * @returns {Promise<boolean>}
+     */
+    public savePlugin(conf: PluginConfiguration, code: string): Promise<boolean>;
+    /**
+     * @public
+     * Save only the plugin configuration (not the code).
+     *
+     * @param {PluginConfiguration} conf
+     * @returns {Promise<boolean>}
+     */
+    public saveConfiguration(conf: PluginConfiguration): Promise<boolean>;
+    /**
+     * @public
+     * Save only the plugin code (not the configuration).
+     *
+     * @param {string} code
+     * @returns {Promise<boolean>}
+     */
+    public saveCode(code: string): Promise<boolean>;
 }
 
 /**
@@ -1505,6 +1588,17 @@ class PluginProperty {
      * @returns {string?}
      */
     public choice(): string | null;
+    /**
+     * @public
+     * Get the label of the choice (enum) value, or null if a choice value is not available.
+     *
+     * @example
+     * const statusLabel = record.prop("Status").choiceLabel(); // "In Progress"
+     * const statusId = record.prop("Status").choice(); // "in_progress"
+     *
+     * @returns {string?}
+     */
+    public choiceLabel(): string | null;
     /**
      * @public
      * Set the property value (should be a valid value for this property type)
@@ -1555,6 +1649,30 @@ class PluginRecord {
     plugin: any;
     row: any;
 
+    /**
+     * @public
+     * Get a raw markdown string for this record, including properties as YAML frontmatter. Please note that the
+     * resulting Markdown is still fairly basic, and not all items or segments are converted (and some features don't
+     * have a good Markdown equivalent), so don't use this for purposes such as backup (use the Export feature for that
+     * instead). Images/Attachments are not included either.
+     *
+     * This is still experimental and may change in the future. Pass {experimental: true} as parameter to use it.
+     *
+     * @example
+     * const result = await record.getAsMarkdown({experimental: true});
+     * if (result) {
+     *     console.log(result.filename, result.content);
+     * }
+     *
+     * @param {{experimental?: boolean}} options
+     * @returns {Promise<{filename: string, content: string}?>} - null on error
+     */
+    public getAsMarkdown(options?: {
+        experimental?: boolean;
+    }): Promise<{
+        filename: string;
+        content: string;
+    } | null>;
     /**
      * @public
      * Get all records that reference this record or any of its line items.

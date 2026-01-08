@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node dev.js",
     "dev:verbose": "node dev.js --print-code",
+    "dev:cache-files": "node examples/dev-plugins/dev-cache-files/dev-cache-files.js",
     "build": "node dev.js --once"
   },
   "scriptExplanations": {

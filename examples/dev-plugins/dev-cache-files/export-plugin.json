@@ -1,0 +1,6 @@
+{
+	"ver": 1,
+	"name": "Demo Exporter Plugin",
+	"icon": "download",
+	"description": "Example Exporter plugin that provides flat-file workspace export functionality for debugging/testing purposes."
+}
