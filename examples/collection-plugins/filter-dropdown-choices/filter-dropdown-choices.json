@@ -1,0 +1,238 @@
+{
+	"ver": 1,
+	"name": "Workboard",
+	"icon": "clipboard-check",
+	"home": false,
+	"page_field_ids": [
+		"type",
+		"status",
+		"Status"
+	],
+	"item_name": "Project",
+	"description": "Filter dropdown choices example",
+	"show_sidebar_items": true,
+	"show_cmdpal_items": true,
+	"fields": [
+		{
+			"id": "type",
+			"label": "Type",
+			"type": "choice",
+			"icon": "tag",
+			"many": false,
+			"read_only": false,
+			"active": true,
+			"choices": [
+				{
+					"id": "bug",
+					"label": "Bug",
+					"icon": "bug",
+					"color": "1",
+					"active": true
+				},
+				{
+					"id": "feature",
+					"label": "Feature",
+					"icon": "sparkles",
+					"color": "4",
+					"active": true
+				},
+				{
+					"id": "docs",
+					"label": "Documentation",
+					"icon": "file-text",
+					"color": "6",
+					"active": true
+				}
+			]
+		},
+		{
+			"id": "Status",
+			"label": "Status",
+			"type": "choice",
+			"many": false,
+			"read_only": false,
+			"active": true,
+			"choices": [
+				{
+					"id": "reported",
+					"label": "Reported",
+					"icon": "",
+					"color": "1",
+					"active": true,
+					"group": "bug"
+				},
+				{
+					"id": "confirmed",
+					"label": "Confirmed",
+					"icon": "",
+					"color": "2",
+					"active": true,
+					"group": "bug"
+				},
+				{
+					"id": "in_progress",
+					"label": "In Progress",
+					"icon": "",
+					"color": "3",
+					"active": true,
+					"group": "bug"
+				},
+				{
+					"id": "testing",
+					"label": "Testing",
+					"icon": "",
+					"color": "4",
+					"active": true,
+					"group": "bug"
+				},
+				{
+					"id": "resolved",
+					"label": "Resolved",
+					"icon": "",
+					"color": "5",
+					"active": true,
+					"group": "bug"
+				},
+				{
+					"id": "proposed",
+					"label": "Proposed",
+					"icon": "",
+					"color": "0",
+					"active": true,
+					"group": "feature"
+				},
+				{
+					"id": "approved",
+					"label": "Approved",
+					"icon": "",
+					"color": "2",
+					"active": true,
+					"group": "feature"
+				},
+				{
+					"id": "design",
+					"label": "Design",
+					"icon": "",
+					"color": "3",
+					"active": true,
+					"group": "feature"
+				},
+				{
+					"id": "development",
+					"label": "Development",
+					"icon": "",
+					"color": "4",
+					"active": true,
+					"group": "feature"
+				},
+				{
+					"id": "review",
+					"label": "Review",
+					"icon": "",
+					"color": "6",
+					"active": true,
+					"group": "feature"
+				},
+				{
+					"id": "shipped",
+					"label": "Shipped",
+					"icon": "",
+					"color": "5",
+					"active": true,
+					"group": "feature"
+				},
+				{
+					"id": "draft",
+					"label": "Draft",
+					"icon": "",
+					"color": "0",
+					"active": true,
+					"group": "docs"
+				},
+				{
+					"id": "docs_review",
+					"label": "In Review",
+					"icon": "",
+					"color": "3",
+					"active": true,
+					"group": "docs"
+				},
+				{
+					"id": "published",
+					"label": "Published",
+					"icon": "",
+					"color": "5",
+					"active": true,
+					"group": "docs"
+				}
+			]
+		},
+		{
+			"icon": "ti-abc",
+			"id": "title",
+			"label": "Title",
+			"many": false,
+			"read_only": false,
+			"active": true,
+			"type": "text"
+		},
+		{
+			"icon": "ti-clock-edit",
+			"id": "updated_at",
+			"label": "Modified",
+			"many": false,
+			"read_only": true,
+			"active": true,
+			"type": "datetime"
+		},
+		{
+			"icon": "ti-clock-plus",
+			"id": "created_at",
+			"label": "Created",
+			"many": false,
+			"read_only": true,
+			"active": true,
+			"type": "datetime"
+		},
+		{
+			"icon": "ti-photo",
+			"id": "banner",
+			"label": "Banner",
+			"many": false,
+			"read_only": false,
+			"active": true,
+			"type": "banner"
+		},
+		{
+			"icon": "ti-align-left",
+			"id": "icon",
+			"label": "Icon",
+			"many": false,
+			"read_only": false,
+			"active": true,
+			"type": "text"
+		}
+	],
+	"sidebar_record_sort_dir": "desc",
+	"sidebar_record_sort_field_id": "updated_at",
+	"managed": {
+		"fields": false,
+		"views": false,
+		"sidebar": false
+	},
+	"custom": {},
+	"views": [
+		{
+			"id": "all",
+			"label": "Table",
+			"type": "table",
+			"active": true,
+			"field_ids": [
+				"title",
+				"type",
+				"status",
+				"Status"
+			]
+		}
+	]
+}

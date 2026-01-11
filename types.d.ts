@@ -1613,6 +1613,14 @@ class PluginProperty {
     public choiceLabel(): string | null;
     /**
      * @public
+     * Get all available choices for this choice/enum property field.
+     * Returns null if this is not a choice-type property.
+     *
+     * @returns {PropertyChoiceOption[]?}
+     */
+    public choices(): PropertyChoiceOption[] | null;
+    /**
+     * @public
      * Set the property value (should be a valid value for this property type)
      *
      * @param {any} v
@@ -1771,6 +1779,17 @@ class PluginRecord {
      * @returns {string?}
      */
     public text(name: any): string | null;
+    /**
+     * @public
+     * Shorthand for prop(name).choice()
+     *
+     * @example
+     * const status = record.choice("Status");
+     *
+     * @param {*} name
+     * @returns {string?}
+     */
+    public choice(name: any): string | null;
     #private;
 }
 
@@ -2075,6 +2094,30 @@ class PropertiesAPI {
         prop: PluginProperty;
         view: PluginViewConfig | null;
     }) => HTMLElement | null): void;
+    /**
+     * @public
+     *
+     * Sets a function that populates the choices shown in a choice/enum dropdown.
+     * The function will be called when the dropdown is opened for editing.
+     * You can filter, add, or completely replace the default choices.
+     *
+     * @example
+     * this.properties.populateChoices("Status", ({record, prop, defaultChoices}) => {
+     *     // Filter: hide choices with a star icon
+     *     const filtered = defaultChoices.filter(c => c.icon != 'ti-star');
+     *
+     *     // Add: include a dynamic option
+     *     return [...filtered, {id: "custom", label: "Custom Option", icon: "ti-star", active: true, color: "0"}];
+     * });
+     *
+     * @param {string} name - Name or guid of the Property (first tries to find by name, then by guid)
+     * @param {({record, prop, defaultChoices}: {record: PluginRecord?, prop: PluginProperty, defaultChoices: PropertyChoiceOption[]}) => PropertyChoiceOption[]} fn - Function that returns the choices to show in the dropdown
+     */
+    public populateChoices(name: string, fn: ({ record, prop, defaultChoices }: {
+        record: PluginRecord | null;
+        prop: PluginProperty;
+        defaultChoices: PropertyChoiceOption[];
+    }) => PropertyChoiceOption[]): void;
     #private;
 }
 
