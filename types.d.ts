@@ -45,6 +45,11 @@ class AppPlugin {
      * Functions to interact with data.
      */
     public data: DataAPI;
+    /**
+     * @public
+     * Functions for real-time WebSocket messaging.
+     */
+    public ws: WebSocketAPI;
 
 }
 
@@ -62,6 +67,7 @@ const COLLECTION_PRIMARY_ACTION_FIRST: "first";
  * @property {string?} sort_field_id
  * @property {PluginSortDir} sort_dir - see SortDir
  * @property {string?} group_by_field_id
+ * @property {string} [group_by_field_bucket] - for Board views when group_by_field_id is a datetime field; one of "week" | "month" | "quarter" | "year"
  * @property {string[]} field_ids - list of field ids (from PluginConfiguration.fields) we want to show in this view
  * @property {string} [query] - search query for this view
  * @property {string} [invalid_query] - the (syntax)error message for the query
@@ -180,6 +186,11 @@ class CollectionPlugin {
      * Functions to interact with data.
      */
     public data: DataAPI;
+    /**
+     * @public
+     * Functions for real-time WebSocket messaging.
+     */
+    public ws: WebSocketAPI;
 
 }
 
@@ -205,6 +216,10 @@ type CollectionView = {
      */
     sort_dir: PluginSortDir;
     group_by_field_id: string | null;
+    /**
+     * - for Board views when group_by_field_id is a datetime field; one of "week" | "month" | "quarter" | "year"
+     */
+    group_by_field_bucket?: string;
     /**
      * - list of field ids (from PluginConfiguration.fields) we want to show in this view
      */
@@ -2011,6 +2026,27 @@ class PluginViewContext {
  */
 type PluginViewType = CollectionViewType;
 
+type PluginWebSocketMessage = {
+    /**
+     * - Custom message type defined by plugin
+     */
+    type: string;
+    /**
+     * - Message payload
+     */
+    data: any;
+    /**
+     * - Sender's user GUID (set automatically on receive)
+     */
+    fromUserGuid?: string;
+    /**
+     * - Sender's plugin GUID (set automatically on receive)
+     */
+    fromPluginGuid?: string;
+};
+
+type PluginWebSocketMessageCallback = (msg: PluginWebSocketMessage) => void;
+
 type PROP_TYPE = typeof PROP_TYPE_CHOICE | typeof PROP_TYPE_NUMBER | typeof PROP_TYPE_PLAINTEXT | typeof PROP_TYPE_FILE | typeof PROP_TYPE_IMAGE | typeof PROP_TYPE_URL | typeof PROP_TYPE_RECORD | typeof PROP_TYPE_USER | typeof PROP_TYPE_HASHTAG | typeof PROP_TYPE_DATETIME | typeof PROP_TYPE_BANNER | typeof PROP_TYPE_DYNAMIC;
 
 const PROP_TYPE_BANNER: "banner";
@@ -2550,6 +2586,110 @@ class ViewsAPI {
         dateVal: Date;
         viewContext: PluginViewContext;
     }) => void): void;
+    #private;
+}
+
+/**
+ * @typedef {Object} PluginWebSocketMessage@typedef {Object} PluginWebSocketMessage
+ * @property {string} type - Custom message type defined by plugin
+ * @property {any} data - Message payload
+ * @property {string} [fromUserGuid] - Sender's user GUID (set automatically on receive)
+ * @property {string} [fromPluginGuid] - Sender's plugin GUID (set automatically on receive)
+ */
+/**
+ * @typedef {(msg: PluginWebSocketMessage) => void} PluginWebSocketMessageCallback
+ */
+/**
+ * WebSocket API for real-time messaging between clients in a workspace.
+ *
+ * Messages are broadcast to all clients in the workspace via WebSocket.
+ * This is fire-and-forget: no delivery guarantees, messages may be dropped
+ * by rate limiting, and offline clients won't receive messages.
+ *
+ * You can listen to websocket messages sent by other plugins. If you only want
+ * to handle messages from your own plugin, filter by `msg.fromPluginGuid === this.getGuid()`.
+ *
+ * @example
+ * // Send a message to all other clients
+ * this.ws.broadcast({
+ *     type: "announce",
+ *     data: { text: "Hello from my plugin!" }
+ * });
+ *
+ * // Send to specific users
+ * this.ws.send({
+ *     type: "toast",
+ *     data: { text: "Hello!" }
+ * }, this.data.getActiveUsers());
+ *
+ * // Listen for incoming messages. You also receive messages sent by other plugins!
+ * const unsubscribe = this.ws.onMessage((msg) => {
+ *     if (msg.fromPluginGuid === this.getGuid()) {
+ *         console.log(`Got ${msg.type} from ${msg.fromUserGuid}:`, msg.data);
+ *     } else {
+ *         console.log(`Another plugin sent ${msg.type}:`, msg.data);
+ *     }
+ * });
+ *
+ * // Later, to stop listening:
+ * unsubscribe();
+ */
+class WebSocketAPI {
+
+    /**
+     * @public
+     * Broadcast a message to all other clients in the workspace.
+     *
+     * This is fire-and-forget: no delivery guarantees.
+     *
+     * @param {PluginWebSocketMessage} message - Message to send
+     *
+     * @example
+     * this.ws.broadcast({
+     *     type: "announce",
+     *     data: { text: "Hello from my plugin!" }
+     * });
+     */
+    public broadcast(message: PluginWebSocketMessage): void;
+    /**
+     * @public
+     * Send a message, optionally to specific users.
+     *
+     * If toUserGuids is null or empty, broadcasts to all clients.
+     * If toUserGuids is provided, only those users will receive the message.
+     *
+     * @param {PluginWebSocketMessage} message - Message to send
+     * @param {PluginUser[]?} toUsers - Optional list of recipient users
+     *
+     * @example
+     * // Send to specific users
+     * const admins = this.data.getActiveUsers().filter(u => u.isAdmin());
+     * this.ws.send({
+     *     type: "dm",
+     *     data: { text: "Hello!" }
+     * }, admins);
+     */
+    public send(message: PluginWebSocketMessage, toUsers?: PluginUser[] | null): void;
+    /**
+     * @public
+     * Register a callback to receive incoming messages.
+     *
+     * Returns an unsubscribe function to stop listening.
+     * Listeners are automatically cleaned up when the plugin is unloaded.
+     *
+     * @param {PluginWebSocketMessageCallback} callback - Function called when a message is received
+     * @returns {() => void} Unsubscribe function
+     *
+     * @example
+     * const unsubscribe = this.ws.onMessage((msg) => {
+     *     if (msg.fromPluginGuid !== this.getGuid()) return;
+     *     if (msg.type === "announce") console.log(msg.data?.text);
+     * });
+     *
+     * // Later, to stop listening:
+     * unsubscribe();
+     */
+    public onMessage(callback: PluginWebSocketMessageCallback): () => void;
     #private;
 }
 

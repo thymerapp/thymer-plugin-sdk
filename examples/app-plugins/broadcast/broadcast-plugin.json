@@ -1,0 +1,6 @@
+{
+	"ver": 1,
+	"name": "Broadcast Demo",
+	"icon": "broadcast",
+	"description": "Demo plugin showing real-time messaging between users"
+}
