@@ -4,7 +4,7 @@
  * 
  * Extend from one of the two classes.
  * 
- * export class Plugin extends AppPlugin {
+ * class Plugin extends AppPlugin {
  * 	
  *    onLoad() {
  *       this.ui.addToaster({
@@ -19,7 +19,7 @@
  * 
  * or:
  * 
- * export class Plugin extends CollectionPlugin {
+ * class Plugin extends CollectionPlugin {
  * 	
  *    onLoad() {
  *       this.ui.addToaster({
@@ -36,7 +36,7 @@
 */
 
 
-export class Plugin extends AppPlugin {
+class Plugin extends AppPlugin {
     onLoad() {
 		this.ui.addToaster({
 			title: "Hello World",

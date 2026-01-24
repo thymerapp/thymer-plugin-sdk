@@ -15,7 +15,7 @@
 */
 import walker from './walker-8f2.png';
 
-export class Plugin extends AppPlugin {
+class Plugin extends AppPlugin {
 	
 	onLoad() {
 
