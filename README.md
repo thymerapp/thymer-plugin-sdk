@@ -167,7 +167,8 @@ This should work great for CSS, small images, and so on. As the plugins become p
 - Your plugin code is stored in your Workspace data and needs to be downloaded, so make sure the asset bundle isn't too big.
 - We use localStorage for Hot Reloading, which adds an additional size limit of a few MB.
 - Consider using external URLs/fetch/import to import large dependencies or assets.
-- If you're writing/pasting code directly into the Edit Code dialog in Thymer, make sure not to include and _export_ or _import_ keywords. They only work in the development set up and are removed by the build step.
+- If you're writing/pasting code directly into the Edit Code dialog in Thymer, make sure not to include and _export_ or _import_ keywords. They only work in the development set up and are removed by the build step. Only use `export class Plugin` when using the Hot Reload + dev build loop (`npm run dev`) to develop plugins in your own editor. This way you can work on larger plugin projects with multiple files, imports, assets and so on and build them into a single plugin.js dist file for distribution. If you're pasting and editing plain plugin.js JavaScript code directly into the Custom Code field in the Thymer UI, leave out `export` and `import` statements, and just use `class Plugin ....` instead.
+
 
 ### Using the Examples
 

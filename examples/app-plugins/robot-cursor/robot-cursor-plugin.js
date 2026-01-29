@@ -21,14 +21,15 @@ export class Plugin extends AppPlugin {
 
 		this.ui.injectCSS(`
 			.text-caret-usertag {
-				display: none !important;
+				display: none !important; 
 			}
-			div.text-caret {
+			div.listview-caret-self {
 				border: none !important;
 				margin: 0px !important;
+				background-color: transparent !important;
 				animation: blink 1s infinite !important;
 			}
-			div.text-caret::after {
+			div.listview-caret-self::after {
 				content: '';
 				position: absolute;
 				top: -32px; left: -2px;
@@ -42,13 +43,13 @@ export class Plugin extends AppPlugin {
 				opacity: 1.0 !important;
 			}
 
-			.text-caret.walking::after{ 
+			.listview-caret-self.walking::after{ 
 				animation-play-state: running; 
 			}
 
-			.text-caret.walking {
+			.listview-caret-self.walking {
 				animation: none !important;
-				opacity: 1.0 !important;
+				opacity: 1.0 !important; 
 			}
 
 			@keyframes walk{to{background-position:-256px 0}}
@@ -62,34 +63,47 @@ export class Plugin extends AppPlugin {
 	}
 
 	createRobotCursor() {
-		let caret, px=0, py=0, idle;
-
-		function attach(el){
-		  if(caret===el) return;
-		  caret=el; px=py=0;
+		const attached = new WeakSet();
 		
-		  new MutationObserver(()=>{
-			const {left,top}=caret.getBoundingClientRect(),
-				  dx=left-px, dy=top-py;
-			if(dx||dy){
-			  caret.style.setProperty('--dir', dx<0?-1:1);
-			  caret.classList.add('walking');
-			  clearTimeout(idle);
-			  idle=setTimeout(()=>caret.classList.remove('walking'),300);
-			  px=left; py=top;
-			}
-		  }).observe(caret,{attributes:true,attributeFilter:['style']});
+		function attach(el) {
+			if (attached.has(el)) return;
+			attached.add(el);
+			
+			// Per-element state (fixes bug with shared state)
+			let px = 0, py = 0, idle;
+			
+			new MutationObserver(() => {
+				const x = parseFloat(el.dataset.x) || 0;
+				const y = parseFloat(el.dataset.y) || 0;
+				const dx = x - px, dy = y - py;
+				if (dx || dy) {
+					el.style.setProperty('--dir', dx < 0 ? '-1' : '1');
+					el.classList.add('walking');
+					clearTimeout(idle);
+					idle = setTimeout(() => el.classList.remove('walking'), 300);
+					px = x;
+					py = y;
+				}
+			}).observe(el, {attributes: true, attributeFilter: ['data-x', 'data-y']});
 		}
 		
-		// watch for new .text-caret nodes 
-		new MutationObserver(m=>m.forEach(rec=>{
-		  rec.addedNodes.forEach(n=>{
-			if(n.nodeType===1 && n.classList.contains('text-caret')) attach(n);
-		  });
-		})).observe(document.body,{childList:true,subtree:true});
+		// Only check added nodes, not full querySelectorAll on every mutation
+		new MutationObserver(mutations => {
+			for (const m of mutations) {
+				for (const node of m.addedNodes) {
+					if (node.nodeType !== 1) continue;
+					if (node.classList.contains('listview-caret-self')) {
+						attach(node);
+					} else if (node.querySelector) {
+						// Check descendants if a container was added
+						node.querySelectorAll('.listview-caret-self').forEach(attach);
+					}
+				}
+			}
+		}).observe(document.body, {childList: true, subtree: true});
 		
-		// attach to any caret already present
-		document.querySelectorAll('.text-caret').forEach(attach);
+		// Initial scan only
+		document.querySelectorAll('.listview-caret-self').forEach(attach);
 	}
 
 	onUnload() {

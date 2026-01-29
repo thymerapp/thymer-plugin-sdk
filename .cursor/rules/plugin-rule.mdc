@@ -32,3 +32,5 @@ When generating plugin code, a few extra rules to take into account:
 
 - when adding formulas or render values to property fields, make sure to use the exact same ID or Label of the field as defined in the JSON config
 
+- Note that 'export class Plugin...' is only used when developing with a build pipeline, so in combination with the SDK's `npm run dev` development build loop / Hot Reloading. If the user is working on a single JS file and copy-pasting plain JavaScript contents directly into Thymer's Custom Code editor, "export" should not be added in front of 'class Plugin...'.
+
