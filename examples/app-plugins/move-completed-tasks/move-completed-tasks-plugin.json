@@ -1,0 +1,6 @@
+{
+	"ver": 1,
+	"name": "Move Completed Tasks",
+	"icon": "ti-check",
+	"description": "Adds a command to move completed tasks to the bottom of their sibling lists"
+}

@@ -1,0 +1,6 @@
+{
+	"ver": 1,
+	"name": "WPM Cursor Demo",
+	"icon": "text",
+	"description": "Demo plugin showing your typing speed (WPM) next to the cursor"
+}
