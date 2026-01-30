@@ -30,7 +30,7 @@ const THREE_JS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three
 const ORBIT_CONTROLS_URL = 'https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js';
 
 
-export class Plugin extends CollectionPlugin {
+class Plugin extends CollectionPlugin {
 
 	/**
 	 * Helper function to load a script and wait for it to be fully available
