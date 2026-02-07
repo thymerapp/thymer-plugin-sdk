@@ -2007,6 +2007,36 @@ class PluginRecord {
     public createLineItem(parentItem: PluginLineItem | null, afterItem: PluginLineItem | null, type: PluginLineItemType, segments: PluginLineItemSegment[] | null, properties: PluginLineItemProps | null): Promise<PluginLineItem | null>;
     /**
      * @public
+     * Insert content parsed from an HTML string into this record.
+     *
+     * @param {string} html - HTML string to parse and insert
+     * @param {PluginLineItem?} parentItem - null: use record as parent
+     * @param {PluginLineItem?} afterItem - null: insert as first child
+     * @returns {Promise<boolean>} true if all operations succeeded
+     */
+    public insertFromHTML(html: string, parentItem: PluginLineItem | null, afterItem: PluginLineItem | null): Promise<boolean>;
+    /**
+     * @public
+     * Insert content parsed from a Markdown string into this record.
+     *
+     * @param {string} markdown - Markdown string to parse and insert
+     * @param {PluginLineItem?} parentItem - null: use record as parent
+     * @param {PluginLineItem?} afterItem - null: insert as first child
+     * @returns {Promise<boolean>} true if all operations succeeded
+     */
+    public insertFromMarkdown(markdown: string, parentItem: PluginLineItem | null, afterItem: PluginLineItem | null): Promise<boolean>;
+    /**
+     * @public
+     * Insert content from a plain text string into this record.
+     *
+     * @param {string} text - Plain text string to parse and insert
+     * @param {PluginLineItem?} parentItem - null: use record as parent
+     * @param {PluginLineItem?} afterItem - null: insert as first child
+     * @returns {Promise<boolean>} true if all operations succeeded
+     */
+    public insertFromPlainText(text: string, parentItem: PluginLineItem | null, afterItem: PluginLineItem | null): Promise<boolean>;
+    /**
+     * @public
      * Get all line items in this record's document tree
      *
      * @returns {Promise<PluginLineItem[]>}
@@ -2041,10 +2071,10 @@ class PluginRecord {
      * @example
      * const price = record.number("Price");
      *
-     * @param {*} name
+     * @param {string} name
      * @returns {number?}
      */
-    public number(name: any): number | null;
+    public number(name: string): number | null;
     /**
      * @public
      * Shorthand for prop(name).date()
@@ -2052,10 +2082,21 @@ class PluginRecord {
      * @example
      * const startDate = record.date("Start Date");
      *
-     * @param {*} name
+     * @param {string} name
      * @returns {Date?}
      */
-    public date(name: any): Date | null;
+    public date(name: string): Date | null;
+    /**
+     * @public
+     * Shorthand for prop(name).datetime()
+     *
+     * @example
+     * const dt = record.datetime("Due Date");
+     *
+     * @param {string} name
+     * @returns {DateTime?}
+     */
+    public datetime(name: string): DateTime | null;
     /**
      * @public
      * Shorthand for prop(name).text()
@@ -2063,10 +2104,10 @@ class PluginRecord {
      * @example
      * const name = record.text("Name");
      *
-     * @param {*} name
+     * @param {string} name
      * @returns {string?}
      */
-    public text(name: any): string | null;
+    public text(name: string): string | null;
     /**
      * @public
      * Shorthand for prop(name).choice()
@@ -2074,10 +2115,10 @@ class PluginRecord {
      * @example
      * const status = record.choice("Status");
      *
-     * @param {*} name
+     * @param {string} name
      * @returns {string?}
      */
-    public choice(name: any): string | null;
+    public choice(name: string): string | null;
     #private;
 }
 
