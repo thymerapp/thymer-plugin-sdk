@@ -1988,6 +1988,25 @@ class PluginRecord {
     public getBackReferenceRecords(): Promise<PluginRecord[]>;
     /**
      * @public
+     * Move this record to a different collection.
+     *
+     * Both the source and target collections must support creating items (e.g. you can't move
+     * records from or to a Journal). Custom properties from the source collection are exported
+     * and stored on the record so they're not lost after the move.
+     *
+     * @param {PluginCollectionAPI} targetCollection - The collection to move this record to
+     * @returns {Promise<boolean>} true if the move succeeded, false otherwise
+     *
+     * @example
+     * const collections = await this.data.getAllCollections();
+     * const target = collections.find(c => c.getName() === 'Archive');
+     * if (target) {
+     *     const success = await record.moveToCollection(target);
+     * }
+     */
+    public moveToCollection(targetCollection: PluginCollectionAPI): Promise<boolean>;
+    /**
+     * @public
      * Get the name (title) of the record
      *
      * @returns {string}
