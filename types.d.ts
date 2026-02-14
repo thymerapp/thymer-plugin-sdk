@@ -1598,6 +1598,30 @@ type PluginLineItemProps = {
  */
 /**
  * Each line item can have multiple segments. Each segment is a piece of text with a type.
+ *
+ * Segment types and their expected `text` values:
+ *
+ *   "text"      - Plain text. Value: string.
+ *   "bold"      - Bold text. Value: string.
+ *   "italic"    - Italic text. Value: string.
+ *   "code"      - Inline code. Value: string.
+ *   "link"      - Bare URL (auto-detected). Value: URL string, e.g. "https://example.com".
+ *   "linkobj"   - Link with display title. Value: object { link: string, title: string }.
+ *   "hashtag"   - Hash tag (auto-detected). Value: string including the #, e.g. "#project".
+ *   "icon"      - Inline icon. Value: icon class name string, e.g. "ti-star", "ti-heart".
+ *   "mention"   - Mention of a user. Value: user GUID string.
+ *   "ref"       - Inline reference to a record. Value: record GUID string,
+ *                 or object { guid: string } with optional display options.
+ *   "datetime"  - Inline date/time tag. Value: DateTimeValue object (DateTime.value()),
+ *                 or a date string which is parsed automatically:
+ *                   Date only: "today", "tomorrow", "next monday", "aug 13", "apr 2025", "2026-02-14"
+ *                   Date+time: "monday 3pm", "tomorrow 15:30", "aug 13 9:30am"
+ *                   Time only: "3pm", "15:30"
+ *                   Relative: "3 days from now", "2 weeks ago", "last friday", "-3 days"
+ *                   Weeks: "week 10", "week 4 of 2023"
+ *                   Quarters: "Q1 2024", "Q3", "2025 Q2"
+ *                   Ranges: "monday to friday", "1pm to 3pm"
+ *
  */
 class PluginLineItemSegment {
     /**
@@ -1607,8 +1631,8 @@ class PluginLineItemSegment {
     constructor(type: string, text: string);
     /** @type {PluginLineItemSegmentType} */
     type: PluginLineItemSegmentType;
-    /** @type {string} */
-    text: string;
+    /** @type {string|object} */
+    text: string | object;
 }
 
 type PluginLineItemSegmentType = "text" | "bold" | "italic" | "code" | "link" | "icon" | "hashtag" | "mention" | "ref" | "linkobj" | "datetime";
@@ -2012,6 +2036,28 @@ class PluginRecord {
      * @returns {string}
      */
     public getName(): string;
+    /**
+     * @public
+     * Get the icon for this record.
+     *
+     * @param {boolean} [includeCollectionIcon=false] - If true, returns the collection's icon when the record doesn't have its own icon set.
+     * @returns {string|null} Icon class string (e.g. "ti-star"), or null when no icon is set and includeCollectionIcon is false
+     */
+    public getIcon(includeCollectionIcon?: boolean): string | null;
+    /**
+     * @public
+     * Get the creation date of this record.
+     *
+     * @returns {Date|null}
+     */
+    public getCreatedAt(): Date | null;
+    /**
+     * @public
+     * Get the last-updated date of this record.
+     *
+     * @returns {Date|null}
+     */
+    public getUpdatedAt(): Date | null;
     /**
      * @public
      * Create a new line item in this record
