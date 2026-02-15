@@ -7,7 +7,7 @@
 * 
 */
 
-export class Plugin extends AppPlugin {
+class Plugin extends AppPlugin {
 	
 	onLoad() {
 		this.addLiveTimeToStatusBar();
