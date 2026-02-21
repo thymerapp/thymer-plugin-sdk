@@ -1,0 +1,6 @@
+{
+	"ver": 1,
+	"name": "Word Count",
+	"icon": "abc",
+	"description": "Shows word count and line count of the active panel's record in the status bar. Demonstrates the Events API: reload + deltas and ignoring events for other records."
+}

@@ -1,0 +1,142 @@
+{
+	"ver": 1,
+	"name": "Example Invoices",
+	"icon": "file-invoice",
+	"color": null,
+	"home": false,
+	"page_field_ids": [
+		"status",
+		"paid_at"
+	],
+	"item_name": "Invoice",
+	"description": "Example collection with auto-values: new invoices get Status Pending; when Status is set to Paid, Paid at is set to today.",
+	"show_sidebar_items": false,
+	"show_cmdpal_items": false,
+	"fields": [
+		{
+			"icon": "ti-flag",
+			"id": "status",
+			"label": "Status",
+			"many": false,
+			"read_only": false,
+			"active": true,
+			"type": "choice",
+			"choices": [
+				{
+					"id": "pending",
+					"label": "Pending",
+					"color": 6,
+					"active": true
+				},
+				{
+					"id": "paid",
+					"label": "Paid",
+					"color": 2,
+					"active": true
+				}
+			]
+		},
+		{
+			"icon": "ti-calendar-check",
+			"id": "paid_at",
+			"label": "Paid at",
+			"many": false,
+			"read_only": true,
+			"active": true,
+			"type": "datetime"
+		},
+		{
+			"icon": "ti-clock-edit",
+			"id": "updated_at",
+			"label": "Modified",
+			"many": false,
+			"read_only": true,
+			"active": true,
+			"type": "datetime"
+		},
+		{
+			"icon": "ti-clock-plus",
+			"id": "created_at",
+			"label": "Created",
+			"many": false,
+			"read_only": true,
+			"active": true,
+			"type": "datetime"
+		},
+		{
+			"icon": "ti-photo",
+			"id": "banner",
+			"label": "Banner",
+			"many": false,
+			"read_only": false,
+			"active": true,
+			"type": "banner"
+		},
+		{
+			"icon": "ti-abc",
+			"id": "title",
+			"label": "Title",
+			"many": false,
+			"read_only": false,
+			"active": true,
+			"type": "text"
+		},
+		{
+			"icon": "ti-align-left",
+			"id": "icon",
+			"label": "Icon",
+			"many": false,
+			"read_only": false,
+			"active": true,
+			"type": "text"
+		}
+	],
+	"sidebar_record_sort_dir": "desc",
+	"sidebar_record_sort_field_id": "updated_at",
+	"managed": {
+		"fields": false,
+		"views": false,
+		"sidebar": false
+	},
+	"custom": {},
+	"views": [
+		{
+			"id": "table",
+			"type": "table",
+			"icon": "ti-table",
+			"label": "Table",
+			"query": "",
+			"description": "",
+			"read_only": false,
+			"shown": true,
+			"field_ids": [
+				"title",
+				"status",
+				"paid_at"
+			],
+			"sort_dir": "desc",
+			"sort_field_id": "updated_at",
+			"group_by_field_id": null
+		},
+		{
+			"id": "board",
+			"type": "board",
+			"icon": "ti-layout-board",
+			"label": "Kanban",
+			"query": "",
+			"description": "Grouped by Status",
+			"read_only": false,
+			"shown": true,
+			"field_ids": [
+				"title",
+				"status",
+				"paid_at"
+			],
+			"sort_dir": "desc",
+			"sort_field_id": "updated_at",
+			"group_by_field_id": "status",
+			"opts": {}
+		}
+	],
+	"default_banner": null
+}

@@ -50,6 +50,11 @@ class AppPlugin {
      * Functions for real-time WebSocket messaging.
      */
     public ws: WebSocketAPI;
+    /**
+     * @public
+     * Subscribe to data, UI, and lifecycle events.
+     */
+    public events: EventsAPI;
 
 }
 
@@ -191,6 +196,11 @@ class CollectionPlugin {
      * Functions for real-time WebSocket messaging.
      */
     public ws: WebSocketAPI;
+    /**
+     * @public
+     * Subscribe to data, UI, and lifecycle events.
+     */
+    public events: EventsAPI;
 
 }
 
@@ -335,6 +345,30 @@ class DataAPI {
      * @returns {Promise<PluginSearchResult>}
      */
     public searchByQuery(query: string, maxResults?: number): Promise<PluginSearchResult>;
+    /**
+     * @public
+     * Upload a file and create a new PluginBlob.
+     *
+     * @example
+     * const file = new File(["hello"], "hello.txt", {type: "text/plain"});
+     * const blob = await this.data.uploadBlob(file);
+     * if (blob) {
+     *     console.log("Uploaded:", blob.fileName, blob.guid);
+     * }
+     *
+     * @param {File} file - The file to upload
+     * @returns {Promise<PluginBlob?>} - The uploaded blob, or null on failure
+     */
+    public uploadBlob(file: File): Promise<PluginBlob | null>;
+    /**
+     * @public
+     * Get a PluginBlob from a PropertyFileValue. Returns null if the PropertyFileValue
+     * has no blob GUID set (e.g. it uses imgData, imgUrl, or imgClass instead).
+     *
+     * @param {PropertyFileValue} fileValue
+     * @returns {Promise<PluginBlob?>}
+     */
+    public getBlobFromPropertyFileValue(fileValue: PropertyFileValue): Promise<PluginBlob | null>;
     #private;
 }
 
@@ -611,6 +645,116 @@ type EnumColors = {
     indigo: "12";
     zinc: "13";
 };
+
+/**
+ * @public
+ * Event system for plugins.
+ *
+ * Exposed as `this.events` on CollectionPlugin and AppPlugin.
+ *
+ * Notes when using the EventsAPI:
+ *
+ * - Events are only delivered while the plugin is loaded. When the user switches
+ *   workspace, the plugin is unloaded, so you only ever see events for the
+ *   currently active workspace. As changes are made by clients with an active workspace,
+ *   the client making the change should be able to pick up the event which caused the change.
+ *
+ * - The syncer may reload plugin state (e.g. conflict resolution, plugin updates,
+ *   or a very busy workspace). When that happens, a 'reload' event is fired and
+ *   your view of the data may have been re-applied from the server. The recommended
+ *   model is: (1) compute any derived state you need in onLoad and again in your
+ *   'reload' handler, and (2) apply deltas from incoming change events between
+ *   reloads. That way you stay correct across reloads without re-scanning everything
+ *   on every small change.
+ *
+ * - Be careful not to introduce infinite loops. For example, updating a line item in
+ *   response to an update to the line item (which you've just triggered yourself).
+ *
+ * - See note on class PluginEvent about writing event handlers.
+ */
+class EventsAPI {
+
+
+
+
+
+    /**
+     * @public
+     * Subscribe to a plugin event.
+     *
+     * @overload@overload
+     * @param {'collection.created'|'collection.updated'|'global-plugin.created'|'global-plugin.updated'} eventName
+     * @param {(event: PluginEventPluginUpdated) => void} callback
+     * @param {PluginEventOptions} [options]
+     * @returns {string} handler ID (pass to `.off()` to unsubscribe)
+     */
+    on(eventName: "collection.created" | "collection.updated" | "global-plugin.created" | "global-plugin.updated", callback: (event: PluginEventPluginUpdated) => void, options?: PluginEventOptions): string;
+    /**
+     * @overload@overload
+     * @param {'record.created'|'record.moved'|'record.updated'} eventName
+     * @param {(event: PluginEventRecord) => void} callback
+     * @param {PluginEventOptions} [options]
+     * @returns {string}
+     */
+    on(eventName: "record.created" | "record.moved" | "record.updated", callback: (event: PluginEventRecord) => void, options?: PluginEventOptions): string;
+    /**
+     * @overload@overload
+     * @param {'lineitem.created'|'lineitem.moved'|'lineitem.undeleted'|'lineitem.updated'} eventName
+     * @param {(event: PluginEventLineItem) => void} callback
+     * @param {PluginEventOptions} [options]
+     * @returns {string}
+     */
+    on(eventName: "lineitem.created" | "lineitem.moved" | "lineitem.undeleted" | "lineitem.updated", callback: (event: PluginEventLineItem) => void, options?: PluginEventOptions): string;
+    /**
+     * @overload@overload
+     * @param {'lineitem.deleted'} eventName
+     * @param {(event: PluginEventLineItemDeleted) => void} callback
+     * @param {PluginEventOptions} [options]
+     * @returns {string}
+     */
+    on(eventName: "lineitem.deleted", callback: (event: PluginEventLineItemDeleted) => void, options?: PluginEventOptions): string;
+    /**
+     * @overload@overload
+     * @param {'blob.updated'} eventName
+     * @param {(event: PluginEventBlobUpdated) => void} callback
+     * @param {PluginEventOptions} [options]
+     * @returns {string}
+     */
+    on(eventName: "blob.updated", callback: (event: PluginEventBlobUpdated) => void, options?: PluginEventOptions): string;
+    /**
+     * @overload@overload
+     * @param {'user.updated'} eventName
+     * @param {(event: PluginEventUserUpdated) => void} callback
+     * @param {PluginEventOptions} [options]
+     * @returns {string}
+     */
+    on(eventName: "user.updated", callback: (event: PluginEventUserUpdated) => void, options?: PluginEventOptions): string;
+    /**
+     * @overload@overload
+     * @param {'panel.navigated'|'panel.closed'|'panel.focused'} eventName
+     * @param {(event: PluginEventPanel) => void} callback
+     * @param {PluginEventOptions} [options]
+     * @returns {string}
+     */
+    on(eventName: "panel.navigated" | "panel.closed" | "panel.focused", callback: (event: PluginEventPanel) => void, options?: PluginEventOptions): string;
+    /**
+     * @overload@overload
+     * @param {'reload'} eventName
+     * @param {(event: PluginEventReload) => void} callback
+     * @param {PluginEventOptions} [options]
+     * @returns {string}
+     */
+    on(eventName: "reload", callback: (event: PluginEventReload) => void, options?: PluginEventOptions): string;
+    /**
+     * @public
+     * Unsubscribe from a previously registered event handler.
+     *
+     * @param {string} handlerId - the ID returned by `.on()`
+     */
+    public off(handlerId: string): void;
+
+    #private;
+}
 
 namespace ExampleConfigurationJSON {
     let name: string;
@@ -1089,6 +1233,41 @@ const PLUGIN_TASK_STATUS_STARTED: "started";
 
 const PLUGIN_TASK_STATUS_WAITING: "waiting";
 
+/**
+ * @public
+ * Class to manage physical files (blobs) stored in the workspace.
+ *
+ * Use `this.data.uploadBlob()` to create a new PluginBlob from a File,
+ * or access blobs from file properties using `property.fileBlob()`.
+ */
+class PluginBlob {
+
+    /** @type {string} */
+    guid: string;
+    /** @type {string} */
+    fileName: string;
+    /** @type {string} */
+    contentType: string;
+    /** @type {number} */
+    fileSize: number;
+    /**
+     * @public
+     * Get the creation date of this blob.
+     *
+     * @returns {Date|null}
+     */
+    public getCreatedAt(): Date | null;
+    /**
+     * @public
+     * Download the blob data. Returns the file data as an ArrayBuffer and its content type,
+     * or null on failure.
+     *
+     * @returns {Promise<ArrayBuffer?>}
+     */
+    public download(): Promise<ArrayBuffer | null>;
+    #private;
+}
+
 type PluginBlockStyle = "" | "quote" | "warning" | "note" | "row";
 
 class PluginCollectionAPI extends PluginPluginAPIBase {
@@ -1172,6 +1351,30 @@ class PluginCollectionAPI extends PluginPluginAPIBase {
      * }
      */
     public getJournalRecord(user: PluginUser, date?: DateTime): Promise<PluginRecord | null>;
+    /**
+     * @public
+     * Get the collection's banner image as a PropertyFileValue.
+     * This is the default banner used by all records in the collection
+     * (unless a record has its own banner set).
+     *
+     * @returns {PropertyFileValue?}
+     */
+    public getBanner(): PropertyFileValue | null;
+    /**
+     * @public
+     * Set the collection's banner image from a PluginBlob.
+     *
+     * @param {PluginBlob} blob
+     * @returns {boolean} true if set successfully
+     */
+    public setBannerFromBlob(blob: PluginBlob): boolean;
+    /**
+     * @public
+     * Set the collection's banner image from a PropertyFileValue.
+     *
+     * @param {PropertyFileValue} fileValue
+     */
+    public setBanner(fileValue: PropertyFileValue): void;
 }
 
 type PluginCommandPaletteCommand = {
@@ -1326,6 +1529,432 @@ type PluginDropdownOption = {
     onSelected?: () => void;
 };
 
+/**
+ * @typedef {'collection.created'|'collection.updated'|'global-plugin.created'|'global-plugin.updated'|'record.created'|'record.updated'|'record.moved'|'lineitem.created'|'lineitem.updated'|'lineitem.moved'|'lineitem.undeleted'|'lineitem.deleted'|'blob.updated'|'user.updated'|'panel.navigated'|'panel.closed'|'panel.focused'|'reload'} PluginEventName
+ */
+/**
+ * @typedef {Object} PluginEventSource@typedef {Object} PluginEventSource
+ * @property {boolean} isLocal - event was initiated by this client (this browser tab)
+ * @property {string|null} userId - when given, the guid of the user who sent this event (not set for local events)
+ */
+/**
+ * @typedef {Object} PluginEventOptions@typedef {Object} PluginEventOptions
+ * @property {string} [collection] - guid of a specific collection to listen to, or '*' for all collections.
+ *   In a CollectionPlugin, the current collection is used as the default filter when this is omitted;
+ *   pass '*' to receive events for all collections in the workspace.
+ * @property {string} [record] - guid of a specific record to listen to (implies its collection)
+ *
+ * **Scope filtering behavior by event:**
+ *
+ * Scoped events (respect collection/record filters):
+ * - `collection.created`, `collection.updated`
+ * - `global-plugin.created`, `global-plugin.updated`
+ * - `record.created`, `record.updated`
+ * - `lineitem.created`, `lineitem.updated`, `lineitem.undeleted`, `lineitem.deleted`
+ *
+ * Unscoped events (always delivered, filters ignored):
+ * - `record.moved`, `lineitem.moved` — bypass filters so handlers are notified
+ *   when items leave their scope, not just when they arrive. The event payload
+ *   carries the **destination** collection/record; compare against your own scope
+ *   to determine direction.
+ * - `blob.updated`, `user.updated` — workspace-global, not tied to a collection
+ * - `panel.navigated`, `panel.closed`, `panel.focused` — UI events, not scoped
+ * - `reload` — lifecycle event, always delivered
+ */
+/**
+ * @typedef {Object} PluginEventHandlerInfo@typedef {Object} PluginEventHandlerInfo
+ * @property {PluginEventName} eventName
+ * @property {Function} callback
+ * @property {PluginEventOptions} options
+ */
+/**
+ * Base class for all plugin events. Every event carries the event name and source info.
+ * Collection/record/lineItem guids are always available as plain strings; the corresponding
+ * objects can be resolved lazily via getter methods.
+ *
+ * ## Async ordering
+ *
+ * Event handlers are invoked synchronously, in order, for each event. If your handler uses
+ * `await` or `.then()`, control yields back to the event system and the next queued event
+ * may fire before your handler's continuation runs. This means that if you use any of the
+ * async helper methods, you need to be careful to not use stale state.
+ *
+ * As an example:
+ *
+ * ```javascript
+ * this.events.on('lineitem.created', (ev) => {
+ *   console.log(`Line item created: ${lineItem.guid}`);
+ * });
+ *
+ * this.events.on('lineitem.updated', (ev) => {
+ *   console.log(`Line item updated: ${ev.lineItemGuid}`);
+ * });
+ * ```
+ *
+ * This will always print "Line item created: <guid>" first, and then "Line item updated: <guid>" second.
+ *
+ * However, if you would use
+ *
+ * ```javascript
+ * this.events.on('lineitem.created', (ev) => {
+ *   somethingAsync.then(() => {
+ *     console.log(`Line item created: ${lineItem.guid}`);
+ *   });
+ * });
+ *
+ * this.events.on('lineitem.updated', (ev) => {
+ *   console.log(`Line item updated: ${ev.lineItemGuid}`);
+ * });
+ * ```
+ *
+ * This might print "Line item updated: <guid>" first, and then "Line item created: <guid>" second, so take
+ * that into account when using async code in event handlers.
+ *
+ */
+declare class PluginEvent {
+    /**
+     * @param {PluginEventName} eventName
+     * @param {EventsAPI} events
+     * @param {PluginEventSource} source
+     * @param {string|null} collectionGuid
+     * @param {string|null} recordGuid
+     * @param {string|null} lineItemGuid
+     */
+    constructor(eventName: PluginEventName, events: EventsAPI, source: PluginEventSource, collectionGuid: string | null, recordGuid: string | null, lineItemGuid: string | null);
+    /** @type {PluginEventName} */
+    eventName: PluginEventName;
+    /** @type {PluginEventSource} */
+    source: PluginEventSource;
+    /** @type {string|null} */
+    collectionGuid: string | null;
+    /** @type {string|null} */
+    recordGuid: string | null;
+    /** @type {string|null} */
+    lineItemGuid: string | null;
+    /**
+     * Get the collection that owns the affected item (lazy).
+     * @returns {PluginCollectionAPI|PluginGlobalPluginAPI|null}
+     */
+    getCollection(): PluginCollectionAPI | PluginGlobalPluginAPI | null;
+    /**
+     * Get the record that owns the affected item, or the record itself (lazy).
+     * @returns {PluginRecord|null}
+     */
+    getRecord(): PluginRecord | null;
+    /**
+     * Get the user who caused this event (lazy). Not set for local events (returns null).
+     * @returns {PluginUser|null}
+     */
+    getSourceUser(): PluginUser | null;
+    #private;
+}
+
+/**
+ * Fired when a blob (file/attachment) is created or updated.
+ *
+ * Event name: 'blob.updated'
+ */
+declare class PluginEventBlobUpdated extends PluginEvent {
+    /**
+     * @param {EventsAPI} events
+     * @param {PluginEventSource} source
+     * @param {string} blobGuid
+     * @param {string|null} fileName
+     * @param {string|null} contentType
+     * @param {number|null} fileSize
+     * @param {number|null} status
+     */
+    constructor(events: EventsAPI, source: PluginEventSource, blobGuid: string, fileName: string | null, contentType: string | null, fileSize: number | null, status: number | null);
+    /** @type {string} */
+    blobGuid: string;
+    /** @type {string|null} */
+    fileName: string | null;
+    /** @type {string|null} */
+    contentType: string | null;
+    /** @type {number|null} */
+    fileSize: number | null;
+    /** @type {number|null} - upload status (0=init, 1=pending, 2=done, 3=failed), or null if not changed */
+    status: number | null;
+}
+
+type PluginEventHandlerInfo = {
+    eventName: PluginEventName;
+    callback: Function;
+    options: PluginEventOptions;
+};
+
+/**
+ * Fired when a line item is created, moved, or updated.
+ *
+ * Event names: 'lineitem.created', 'lineitem.moved', 'lineitem.updated'
+ *
+ * For 'lineitem.created' and 'lineitem.moved': parentGuid, afterGuid, overindent, type are set.
+ * For 'lineitem.updated': metaProperties, properties, segments, status are set.
+ */
+declare class PluginEventLineItem extends PluginEvent {
+    /**
+     * @param {PluginEventName} eventName
+     * @param {EventsAPI} events
+     * @param {PluginEventSource} source
+     * @param {string} collectionGuid
+     * @param {string} recordGuid
+     * @param {string} lineItemGuid
+     * @param {{parentGuid?: string|null, afterGuid?: string|null, overindent?: number|null, type?: string|null, metaProperties?: {[key: string]: any}|null, properties?: {[key: string]: any}|null, rawSegments?: string[]|null, status?: PluginTaskStatus|null}} fields
+     */
+    constructor(eventName: PluginEventName, events: EventsAPI, source: PluginEventSource, collectionGuid: string, recordGuid: string, lineItemGuid: string, fields: {
+        parentGuid?: string | null;
+        afterGuid?: string | null;
+        overindent?: number | null;
+        type?: string | null;
+        metaProperties?: {
+            [key: string]: any;
+        } | null;
+        properties?: {
+            [key: string]: any;
+        } | null;
+        rawSegments?: string[] | null;
+        status?: PluginTaskStatus | null;
+    });
+    /** @type {string|null} - parent item guid */
+    parentGuid: string | null;
+    /** @type {string|null} - after-sibling guid */
+    afterGuid: string | null;
+    /** @type {number|null} - overindent level relative to after-sibling */
+    overindent: number | null;
+    /** @type {string|null} - line item type */
+    type: string | null;
+    /** @type {{[key: string]: any}|null} - meta properties changed (__mp), or null */
+    metaProperties: {
+        [key: string]: any;
+    } | null;
+    /** @type {{[key: string]: any}|null} - key-value properties changed (__kv), or null */
+    properties: {
+        [key: string]: any;
+    } | null;
+    /** @type {PluginTaskStatus|null} - task status shortcut from __mp.done, or null when not changed */
+    status: PluginTaskStatus | null;
+    /**
+     * Whether the line item's text segments (content) were changed in this event.
+     * @returns {boolean}
+     */
+    hasSegments(): boolean;
+    /**
+     * Get the updated segments as PluginLineItemSegment objects.
+     *
+     * Returns null if segments were not changed in this event.
+     * @returns {PluginLineItemSegment[]|null}
+     */
+    getSegments(): PluginLineItemSegment[] | null;
+    /**
+     * Get the full PluginLineItem object for this event from the data store.
+     *
+     * Note: As this is async, calling it inside an event handler, it will yield to the event
+     * loop, so subsequent events (e.g. `lineitem.updated` after `lineitem.created`) may
+     * fire before this resolves. Prefer synchronous event properties (`.lineItemGuid`,
+     * `.getSegments()`, `.status`, `.type`, etc.) when ordering matters, or use your own
+     * queuing logic to ensure the correct order of handling events.
+     *
+     * @returns {Promise<PluginLineItem|null>}
+     */
+    getLineItem(): Promise<PluginLineItem | null>;
+    #private;
+}
+
+/**
+ * Fired when a line item is deleted.
+ *
+ * Event name: 'lineitem.deleted'
+ */
+declare class PluginEventLineItemDeleted extends PluginEvent {
+    /**
+     * @param {EventsAPI} events
+     * @param {PluginEventSource} source
+     * @param {string} collectionGuid
+     * @param {string|null} recordGuid
+     * @param {string} lineItemGuid
+     */
+    constructor(events: EventsAPI, source: PluginEventSource, collectionGuid: string, recordGuid: string | null, lineItemGuid: string);
+}
+
+type PluginEventName = "collection.created" | "collection.updated" | "global-plugin.created" | "global-plugin.updated" | "record.created" | "record.updated" | "record.moved" | "lineitem.created" | "lineitem.updated" | "lineitem.moved" | "lineitem.undeleted" | "lineitem.deleted" | "blob.updated" | "user.updated" | "panel.navigated" | "panel.closed" | "panel.focused" | "reload";
+
+type PluginEventOptions = {
+    /**
+     * - guid of a specific collection to listen to, or '*' for all collections.
+     * In a CollectionPlugin, the current collection is used as the default filter when this is omitted;
+     * pass '*' to receive events for all collections in the workspace.
+     */
+    collection?: string;
+    /**
+     * - guid of a specific record to listen to (implies its collection)
+     *
+     * **Scope filtering behavior by event:**
+     *
+     * Scoped events (respect collection/record filters):
+     * - `collection.created`, `collection.updated`
+     * - `global-plugin.created`, `global-plugin.updated`
+     * - `record.created`, `record.updated`
+     * - `lineitem.created`, `lineitem.updated`, `lineitem.undeleted`, `lineitem.deleted`
+     *
+     * Unscoped events (always delivered, filters ignored):
+     * - `record.moved`, `lineitem.moved` — bypass filters so handlers are notified
+     * when items leave their scope, not just when they arrive. The event payload
+     * carries the **destination** collection/record; compare against your own scope
+     * to determine direction.
+     * - `blob.updated`, `user.updated` — workspace-global, not tied to a collection
+     * - `panel.navigated`, `panel.closed`, `panel.focused` — UI events, not scoped
+     * - `reload` — lifecycle event, always delivered
+     */
+    record?: string;
+};
+
+/**
+ * Fired for panel events.
+ *
+ * Event names: 'panel.navigated', 'panel.closed', 'panel.focused'
+ */
+declare class PluginEventPanel extends PluginEvent {
+    /**
+     * @param {PluginEventName} eventName
+     * @param {EventsAPI} events
+     * @param {PluginPanel} panel
+     */
+    constructor(eventName: PluginEventName, events: EventsAPI, panel: PluginPanel);
+    /** @type {PluginPanel} */
+    panel: PluginPanel;
+}
+
+/**
+ * Fired when a collection or global plugin root is created or updated
+ * (config/code/css changes, or trashed).
+ *
+ * Event names: 'collection.created', 'collection.updated',
+ *              'global-plugin.created', 'global-plugin.updated'
+ */
+declare class PluginEventPluginUpdated extends PluginEvent {
+    /**
+     * @param {PluginEventName} eventName
+     * @param {EventsAPI} events
+     * @param {PluginEventSource} source
+     * @param {string} collectionGuid
+     * @param {'collection'|'plugin'} type
+     * @param {Object|null} json
+     * @param {string|null} code
+     * @param {string|null} css
+     * @param {boolean|null} trashed
+     */
+    constructor(eventName: PluginEventName, events: EventsAPI, source: PluginEventSource, collectionGuid: string, type: "collection" | "plugin", json: any | null, code: string | null, css: string | null, trashed: boolean | null);
+    /** @type {'collection'|'plugin'} */
+    type: "collection" | "plugin";
+    /** @type {Object|null} - collection config JSON when updated, otherwise null */
+    json: any | null;
+    /** @type {string|null} - plugin code when updated, otherwise null */
+    code: string | null;
+    /** @type {string|null} - plugin CSS when updated, otherwise null */
+    css: string | null;
+    /** @type {boolean|null} - true when trashed, false when untrashed, null when not changed */
+    trashed: boolean | null;
+}
+
+/**
+ * Fired when a record is created, moved, or updated.
+ *
+ * Event names: 'record.created', 'record.moved', 'record.updated'
+ *
+ * For 'record.created' and 'record.moved': parentGuid, afterGuid, type are set from the InsMov operation.
+ * For 'record.updated': metaProperties, properties, trashed are set from the Update/SetKV operation.
+ */
+declare class PluginEventRecord extends PluginEvent {
+    /**
+     * @param {PluginEventName} eventName
+     * @param {EventsAPI} events
+     * @param {PluginEventSource} source
+     * @param {string} collectionGuid
+     * @param {string} recordGuid
+     * @param {{parentGuid?: string|null, afterGuid?: string|null, type?: string|null, metaProperties?: {[key: string]: any}|null, properties?: {[key: string]: any}|null, trashed?: boolean|null}} fields
+     */
+    constructor(eventName: PluginEventName, events: EventsAPI, source: PluginEventSource, collectionGuid: string, recordGuid: string, fields: {
+        parentGuid?: string | null;
+        afterGuid?: string | null;
+        type?: string | null;
+        metaProperties?: {
+            [key: string]: any;
+        } | null;
+        properties?: {
+            [key: string]: any;
+        } | null;
+        trashed?: boolean | null;
+    });
+    /** @type {string|null} - parent collection guid */
+    parentGuid: string | null;
+    /** @type {string|null} - after-sibling guid */
+    afterGuid: string | null;
+    /** @type {string|null} - record type */
+    type: string | null;
+    /** @type {{[key: string]: any}|null} - meta properties changed (__mp), or null */
+    metaProperties: {
+        [key: string]: any;
+    } | null;
+    /** @type {{[key: string]: any}|null} - key-value properties changed (__kv), or null */
+    properties: {
+        [key: string]: any;
+    } | null;
+    /** @type {boolean|null} - true=trashed, false=untrashed, null=not changed */
+    trashed: boolean | null;
+}
+
+/**
+ * Fired on full state reload.
+ *
+ * Event name: 'reload'
+ */
+declare class PluginEventReload extends PluginEvent {
+    /**
+     * @param {EventsAPI} events
+     */
+    constructor(events: EventsAPI);
+}
+
+type PluginEventSource = {
+    /**
+     * - event was initiated by this client (this browser tab)
+     */
+    isLocal: boolean;
+    /**
+     * - when given, the guid of the user who sent this event (not set for local events)
+     */
+    userId: string | null;
+};
+
+/**
+ * Fired when a user is updated.
+ *
+ * Event name: 'user.updated'
+ */
+declare class PluginEventUserUpdated extends PluginEvent {
+    /**
+     * @param {EventsAPI} events
+     * @param {PluginEventSource} source
+     * @param {string} userGuid
+     * @param {{[key: string]: any}|null} properties
+     */
+    constructor(events: EventsAPI, source: PluginEventSource, userGuid: string, properties: {
+        [key: string]: any;
+    } | null);
+    /** @type {string} */
+    userGuid: string;
+    /** @type {{[key: string]: any}|null} - updated key-value properties, or null */
+    properties: {
+        [key: string]: any;
+    } | null;
+    /**
+     * Get the PluginUser object for the updated user (lazy).
+     * @returns {PluginUser|null}
+     */
+    getUser(): PluginUser | null;
+    #private;
+}
+
 class PluginGlobalPluginAPI extends PluginPluginAPIBase {
     /**
      * @public
@@ -1475,6 +2104,35 @@ class PluginLineItem {
      */
     public setMetaProperties(props: Record<string, any>): Promise<boolean>;
     /**
+     * For image and file line items, set the file which should be displayed on this line item.
+     * Uses the same meta keys as the editor (fileguid, filename, filesize; for images resized is cleared).
+     *
+     * @param {PluginBlob} blob
+     * @returns {Promise<boolean>}
+     *
+     * @example
+     * // Upload a file or image and insert it as a new line item on the current record (e.g. from a file input):
+     * const record = plugin.ui.getActivePanel()?.getActiveRecord();
+     * if (!record) return;
+     * const file = fileInputElement.files?.[0];
+     * if (!file) return;
+     * const blob = await plugin.data.uploadBlob(file);
+     * if (!blob) return;
+     * const lineItem = await record.createLineItem(null, null, 'image', null, null);
+     * if (lineItem) await lineItem.setBlob(blob);
+     *
+     * @example
+     * // Same for a file attachment (generic file line item):
+     * const lineItem = await record.createLineItem(null, null, 'file', null, null);
+     * if (lineItem) await lineItem.setBlob(blob);
+     */
+    setBlob(blob: PluginBlob): Promise<boolean>;
+    /**
+     * For image and file line items, get the file displayed on this line item.
+     * @returns {Promise<PluginBlob?>}
+     */
+    getBlob(): Promise<PluginBlob | null>;
+    /**
      * @public
      * Set the heading size (1-6) for heading line items.
      *
@@ -1598,6 +2256,33 @@ type PluginLineItemProps = {
  */
 /**
  * Each line item can have multiple segments. Each segment is a piece of text with a type.
+ *
+ * Segment types and their expected `text` values:
+ *
+ *   "text"      - Plain text. Value: string.
+ *   "bold"      - Bold text. Value: string.
+ *   "italic"    - Italic text. Value: string.
+ *   "code"      - Inline code. Value: string.
+ *   "link"      - Bare URL (auto-detected). Value: URL string, e.g. "https://example.com".
+ *   "linkobj"   - Link with display title. Value: object { link: string, title: string }.
+ *   "hashtag"   - Hash tag (auto-detected). Value: string including the #, e.g. "#project".
+ *   "icon"      - Inline icon. Value: icon class name string, e.g. "ti-star", "ti-heart".
+ *   "mention"   - Mention of a user. Value: user GUID string.
+ *   "ref"       - Inline reference to a record, collection view, or other line item. Must be an object
+ *                 { guid: string } with optional display options {viewId: string, title: string} . When 'title'
+ *                 is provided, it will be used as the display text of the reference. When 'viewId' is provided
+ *                 and 'guid' belongs to a collection, the reference will point to a specific View of the collection.
+ *
+ *   "datetime"  - Inline date/time tag. Value: DateTimeValue object (DateTime.value()),
+ *                 or a date string which is parsed automatically:
+ *                   Date only: "today", "tomorrow", "next monday", "aug 13", "apr 2025", "2026-02-14"
+ *                   Date+time: "monday 3pm", "tomorrow 15:30", "aug 13 9:30am"
+ *                   Time only: "3pm", "15:30"
+ *                   Relative: "3 days from now", "2 weeks ago", "last friday", "-3 days"
+ *                   Weeks: "week 10", "week 4 of 2023"
+ *                   Quarters: "Q1 2024", "Q3", "2025 Q2"
+ *                   Ranges: "monday to friday", "1pm to 3pm"
+ *
  */
 class PluginLineItemSegment {
     /**
@@ -1607,8 +2292,8 @@ class PluginLineItemSegment {
     constructor(type: string, text: string);
     /** @type {PluginLineItemSegmentType} */
     type: PluginLineItemSegmentType;
-    /** @type {string} */
-    text: string;
+    /** @type {string|object} */
+    text: string | object;
 }
 
 type PluginLineItemSegmentType = "text" | "bold" | "italic" | "code" | "link" | "icon" | "hashtag" | "mention" | "ref" | "linkobj" | "datetime";
@@ -1914,6 +2599,13 @@ class PluginProperty {
     public set(v: any): void;
     /**
      * @public
+     * Shortcut for setting a date value from a JavaScript Date object.
+     *
+     * @param {Date} date
+     */
+    public setFromDate(date: Date): void;
+    /**
+     * @public
      * If this property is of type Choice, set the value to the choice/status/enum with the given
      * choiceName.
      *
@@ -1946,6 +2638,41 @@ class PluginProperty {
      * @returns {DateTime?}
      */
     public datetime(): DateTime | null;
+    /**
+     * @public
+     * Get the property value as a PropertyFileValue, or null if this property is not a file-type property
+     * (PROP_TYPE_FILE, PROP_TYPE_IMAGE, or PROP_TYPE_BANNER).
+     *
+     * @returns {PropertyFileValue?}
+     */
+    public file(): PropertyFileValue | null;
+    /**
+     * @public
+     * Get the PluginBlob for this file property, or null if no blob GUID is set (in the case of a default
+     * banner value, for example).
+     * Only works for file-type properties (PROP_TYPE_FILE, PROP_TYPE_IMAGE, or PROP_TYPE_BANNER).
+     *
+     * @returns {Promise<PluginBlob?>}
+     */
+    public fileBlob(): Promise<PluginBlob | null>;
+    /**
+     * @public
+     * Set a file property value from a PluginBlob. Only works for file-type properties
+     * (PROP_TYPE_FILE, PROP_TYPE_IMAGE, or PROP_TYPE_BANNER).
+     *
+     * @param {PluginBlob} blob
+     * @returns {boolean} true if set successfully, false otherwise
+     */
+    public setFileFromBlob(blob: PluginBlob): boolean;
+    /**
+     * @public
+     * Set a file property value directly from a PropertyFileValue. Only works for file-type properties
+     * (PROP_TYPE_FILE, PROP_TYPE_IMAGE, or PROP_TYPE_BANNER).
+     *
+     * @param {PropertyFileValue} fileValue
+     * @returns {boolean} true if set successfully, false otherwise
+     */
+    public setFile(fileValue: PropertyFileValue): boolean;
     #private;
 }
 
@@ -1988,11 +2715,94 @@ class PluginRecord {
     public getBackReferenceRecords(): Promise<PluginRecord[]>;
     /**
      * @public
+     * Move this record to a different collection.
+     *
+     * Both the source and target collections must support creating items (e.g. you can't move
+     * records from or to a Journal). Custom properties from the source collection are exported
+     * and stored on the record so they're not lost after the move.
+     *
+     * @param {PluginCollectionAPI} targetCollection - The collection to move this record to
+     * @returns {Promise<boolean>} true if the move succeeded, false otherwise
+     *
+     * @example
+     * const collections = await this.data.getAllCollections();
+     * const target = collections.find(c => c.getName() === 'Archive');
+     * if (target) {
+     *     const success = await record.moveToCollection(target);
+     * }
+     */
+    public moveToCollection(targetCollection: PluginCollectionAPI): Promise<boolean>;
+    /**
+     * @public
      * Get the name (title) of the record
      *
      * @returns {string}
      */
     public getName(): string;
+    /**
+     * @public
+     * Get the icon for this record.
+     *
+     * @param {boolean} [includeCollectionIcon=false] - If true, returns the collection's icon when the record doesn't have its own icon set.
+     * @returns {string|null} Icon class string (e.g. "ti-star"), or null when no icon is set and includeCollectionIcon is false
+     */
+    public getIcon(includeCollectionIcon?: boolean): string | null;
+    /**
+     * @public
+     * Get the creation date of this record.
+     *
+     * @returns {Date|null}
+     */
+    public getCreatedAt(): Date | null;
+    /**
+     * @public
+     * Get the last-updated date of this record.
+     *
+     * @returns {Date|null}
+     */
+    public getUpdatedAt(): Date | null;
+    /**
+     * @public
+     * If this record is a journal page, returns the user and date it represents.
+     * Returns null if this record does not belong to a journal plugin.
+     *
+     * This is the inverse of `PluginCollectionAPI.getJournalRecord(user, date)`.
+     *
+     * @example
+     * const details = record.getJournalDetails();
+     * if (details) {
+     *     console.log(`Journal page for ${details.userGuid} on ${details.date}`);
+     * }
+     *
+     * @returns {{userGuid: string, date: Date}?}
+     */
+    public getJournalDetails(): {
+        userGuid: string;
+        date: Date;
+    } | null;
+    /**
+     * @public
+     * Get the banner image for this record as a PropertyFileValue.
+     * Falls back to the collection banner, then the app-wide default banner.
+     *
+     * @returns {PropertyFileValue?}
+     */
+    public getBanner(): PropertyFileValue | null;
+    /**
+     * @public
+     * Set the banner image for this record from a PluginBlob.
+     *
+     * @param {PluginBlob} blob
+     * @returns {boolean} true if set successfully
+     */
+    public setBannerFromBlob(blob: PluginBlob): boolean;
+    /**
+     * @public
+     * Set the banner image for this record from a PropertyFileValue.
+     *
+     * @param {PropertyFileValue} fileValue
+     */
+    public setBanner(fileValue: PropertyFileValue): void;
     /**
      * @public
      * Create a new line item in this record
@@ -2039,9 +2849,10 @@ class PluginRecord {
      * @public
      * Get all line items in this record's document tree
      *
+     * @param {boolean} expandReferences - if true (default), also include line items which are reference/transclusion targets of items in the tree
      * @returns {Promise<PluginLineItem[]>}
      */
-    public getLineItems(): Promise<PluginLineItem[]>;
+    public getLineItems(expandReferences?: boolean): Promise<PluginLineItem[]>;
     /**
      * @public
      * Get all properties of the record. If viewName is provided, only return properties that are visible
@@ -2785,6 +3596,72 @@ class UIAPI {
     public createPanel(options?: {
         afterPanel?: PluginPanel;
     }): Promise<PluginPanel | null>;
+    /**
+     * @public
+     * Register a vibe so it appears in Focus Mode / Vibe Shift. Call the returned function to unregister, or it is
+     * unregistered automatically when the plugin is destroyed.
+     *
+     * You must provide the CSS for your vibe via injectCSS. When a vibe is active, the <html>
+     * tag (document.documentElement), has class "vibe-shift" plus your vibeClass (e.g. "vibe-my-calm").
+     * Target selectors like `.vibe-shift.vibe-my-calm` or `html.vibe-shift.vibe-my-calm`.
+     *
+     * @param {Object} vibe
+     * @param {string} vibe.theme - theme ID from getThemes() (e.g. "thymer-dark-neon-noir")
+     * @param {string} vibe.vibeClass - CSS class added to the layout (e.g. "vibe-my-calm")
+     * @param {string} vibe.label - display name in the vibe picker
+     * @param {""|"empty"|"banner"|"animated"} vibe.cat - category to list vibe under: "empty" (very minimalistic),
+     * "banner" (image or wallpaper based), or "animated" (like a video or animation)
+     * @param {() => void} [vibe.onApplied] - optional callback when this vibe is applied
+     * @returns {() => void} call to unregister this vibe
+     *
+     * @example
+     * // Register a custom "Calm" vibe and inject its styles. The vibe appears in the
+     * // Focus Mode / Vibe Shift picker. CSS targets .vibe-shift plus your vibeClass.
+     * this.ui.injectCSS(`
+     *   .vibe-shift.vibe-my-calm .panel.has-focus {
+     *     background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+     *   }
+     *   html.vibe-shift.vibe-my-calm .panel.has-focus::before {
+     *     display: none;
+     *   }
+     * `);
+     * this.ui.registerVibe({
+     *   theme: 'thymer-dark-neon-noir',
+     *   vibeClass: 'vibe-my-calm',
+     *   label: 'Calm',
+     *   cat: 'empty',
+     * });
+     */
+    public registerVibe(vibe: {
+        theme: string;
+        vibeClass: string;
+        label: string;
+        cat: "" | "empty" | "banner" | "animated";
+        onApplied?: () => void;
+    }): () => void;
+    /**
+     * @public
+     * List all available themes (built-in plus any from custom theme CSS).
+     * @returns {{id: string, name: string, appearance: 'light'|'dark'}[]}
+     */
+    public getThemes(): {
+        id: string;
+        name: string;
+        appearance: "light" | "dark";
+    }[];
+    /**
+     * @public
+     * Get the current theme configuration (light/dark slot ids and appearance).
+     * @returns {import("../../shared/types.js").ThemeConfig?}
+     */
+    public getCurrentTheme(): any | null;
+    /**
+     * @public
+     * Set the current theme by theme ID (e.g. "thymer-dark-neon-noir"). Saves for the active user when logged in.
+     * @param {string} themeId - theme id or name from getThemes()
+     * @returns {boolean} true if theme was found and applied
+     */
+    public setTheme(themeId: string): boolean;
     #private;
 }
 
