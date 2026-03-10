@@ -2429,7 +2429,31 @@ class PluginPanel {
     public getNavigation(): any;
     /**
      * @public
-     * Navigate the panel to any new location
+     * Navigate the panel to a new location.
+     *
+     * There are two ways to use this method:
+     *
+     * **Direct navigation** — provide `type` and `rootId` to navigate to a known location:
+     * ```
+     * panel.navigateTo({
+     *     type: NAVIGATION_PANEL_EDITOR,
+     *     rootId: someDocumentGuid,
+     *     workspaceGuid: wsguid,
+     * });
+     * ```
+     *
+     * **Item-based navigation** — provide `itemGuid` to automatically resolve the item's
+     * document root and navigate there. Combine with `highlight: true` to scroll to and
+     * highlight the item within its parent document:
+     * ```
+     * panel.navigateTo({
+     *     itemGuid: someLineItemGuid,
+     *     highlight: true,
+     * });
+     * ```
+     *
+     * When `itemGuid` is provided, `type`, `rootId`, and `workspaceGuid` are resolved
+     * automatically. Returns a Promise<boolean> in this case (true if the item was found).
      *
      * @param {Object} navigation Navigation state
      * @param {string} navigation.type Panel type - use NAVIGATION_PANEL_EDITOR ('edit_panel') to open
@@ -2438,6 +2462,11 @@ class PluginPanel {
      * @param {string?} navigation.subId Sub ID
      * @param {string?} navigation.workspaceGuid Workspace GUID
      * @param {Object} [navigation.state] Additional state
+     * @param {string} [navigation.itemGuid] A line item guid to navigate to. Automatically resolves
+     *   the document root. When provided, `type`, `rootId`, and `workspaceGuid` are determined automatically.
+     * @param {boolean} [navigation.highlight] When true (and `itemGuid` is provided), scrolls to and
+     *   highlights the item within its parent document. Defaults to false.
+     * @returns {void | Promise<boolean>} void for direct navigation; Promise<boolean> when itemGuid is used
      */
     public navigateTo(navigation: {
         type: string;
@@ -2445,7 +2474,9 @@ class PluginPanel {
         subId: string | null;
         workspaceGuid: string | null;
         state?: any;
-    }): void;
+        itemGuid?: string;
+        highlight?: boolean;
+    }): void | Promise<boolean>;
     /**
      * @public
      * Navigate to a custom panel you registered using registerCustomPanel()
@@ -3374,7 +3405,7 @@ type PropertyField = {
      */
     active: boolean;
     /**
-     * - can user add multiple values for this property? TODO: not supported yet, always false
+     * - can user add multiple values for this property?
      */
     many: boolean;
     /**
