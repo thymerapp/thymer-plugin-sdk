@@ -11,7 +11,7 @@
 * - Using the viewContext to open records in other panels
 */
 
-export class Plugin extends CollectionPlugin {
+class Plugin extends CollectionPlugin {
 
     onLoad() {
         // Register a custom view for the specified view name
