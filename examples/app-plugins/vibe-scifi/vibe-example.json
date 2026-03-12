@@ -1,0 +1,6 @@
+{
+	"ver": 1,
+	"name": "Sci-fi Vibe",
+	"icon": "movie",
+	"description": "Demo app plugin that registers a custom vibe: Star Wars-like opening crawl style for Focus Mode."
+}

@@ -1611,7 +1611,7 @@ type PluginDropdownOption = {
  * that into account when using async code in event handlers.
  *
  */
-declare class PluginEvent {
+class PluginEvent {
     /**
      * @param {PluginEventName} eventName
      * @param {EventsAPI} events
@@ -1654,7 +1654,7 @@ declare class PluginEvent {
  *
  * Event name: 'blob.updated'
  */
-declare class PluginEventBlobUpdated extends PluginEvent {
+class PluginEventBlobUpdated extends PluginEvent {
     /**
      * @param {EventsAPI} events
      * @param {PluginEventSource} source
@@ -1691,7 +1691,7 @@ type PluginEventHandlerInfo = {
  * For 'lineitem.created' and 'lineitem.moved': parentGuid, afterGuid, overindent, type are set.
  * For 'lineitem.updated': metaProperties, properties, segments, status are set.
  */
-declare class PluginEventLineItem extends PluginEvent {
+class PluginEventLineItem extends PluginEvent {
     /**
      * @param {PluginEventName} eventName
      * @param {EventsAPI} events
@@ -1765,7 +1765,7 @@ declare class PluginEventLineItem extends PluginEvent {
  *
  * Event name: 'lineitem.deleted'
  */
-declare class PluginEventLineItemDeleted extends PluginEvent {
+class PluginEventLineItemDeleted extends PluginEvent {
     /**
      * @param {EventsAPI} events
      * @param {PluginEventSource} source
@@ -1813,7 +1813,7 @@ type PluginEventOptions = {
  *
  * Event names: 'panel.navigated', 'panel.closed', 'panel.focused'
  */
-declare class PluginEventPanel extends PluginEvent {
+class PluginEventPanel extends PluginEvent {
     /**
      * @param {PluginEventName} eventName
      * @param {EventsAPI} events
@@ -1831,7 +1831,7 @@ declare class PluginEventPanel extends PluginEvent {
  * Event names: 'collection.created', 'collection.updated',
  *              'global-plugin.created', 'global-plugin.updated'
  */
-declare class PluginEventPluginUpdated extends PluginEvent {
+class PluginEventPluginUpdated extends PluginEvent {
     /**
      * @param {PluginEventName} eventName
      * @param {EventsAPI} events
@@ -1864,7 +1864,7 @@ declare class PluginEventPluginUpdated extends PluginEvent {
  * For 'record.created' and 'record.moved': parentGuid, afterGuid, type are set from the InsMov operation.
  * For 'record.updated': metaProperties, properties, trashed are set from the Update/SetKV operation.
  */
-declare class PluginEventRecord extends PluginEvent {
+class PluginEventRecord extends PluginEvent {
     /**
      * @param {PluginEventName} eventName
      * @param {EventsAPI} events
@@ -1908,7 +1908,7 @@ declare class PluginEventRecord extends PluginEvent {
  *
  * Event name: 'reload'
  */
-declare class PluginEventReload extends PluginEvent {
+class PluginEventReload extends PluginEvent {
     /**
      * @param {EventsAPI} events
      */
@@ -1931,7 +1931,7 @@ type PluginEventSource = {
  *
  * Event name: 'user.updated'
  */
-declare class PluginEventUserUpdated extends PluginEvent {
+class PluginEventUserUpdated extends PluginEvent {
     /**
      * @param {EventsAPI} events
      * @param {PluginEventSource} source
@@ -2018,8 +2018,13 @@ class PluginLineItem {
     record: PluginRecord;
     /** @type {string?} */
     parent_guid: string | null;
-    /** @type {PluginLineItem[]} */
-    children: PluginLineItem[];
+    /**
+     * @public
+     * Synchronous access to cached children. Returns null if children have not been loaded yet.
+     * Use `getChildren()` for guaranteed access (fetches from backend if needed).
+     * @type {PluginLineItem[]|null}
+     */
+    public get children(): PluginLineItem[] | null;
     /** @type {PluginLineItemSegment[]} */
     segments: PluginLineItemSegment[];
     /** @type {PluginLineItemProps?} */
@@ -2032,6 +2037,7 @@ class PluginLineItem {
      * @returns {Promise<boolean>} true if successful
      */
     public setSegments(segments: PluginLineItemSegment[]): Promise<boolean>;
+
 
     /**
      * @returns {Date?}
@@ -2049,6 +2055,51 @@ class PluginLineItem {
      * @returns {string?}
      */
     getUpdatedByGuid(): string | null;
+    /**
+     * @public
+     * Get the record this line item belongs to.
+     *
+     * @returns {PluginRecord}
+     */
+    public getRecord(): PluginRecord;
+    /**
+     * @public
+     * Get the direct children of this line item.
+     * Efficiently cached: returns instantly when children were loaded via getLineItems(),
+     * fetches from backend on demand otherwise.
+     *
+     * @returns {Promise<PluginLineItem[]>}
+     */
+    public getChildren(): Promise<PluginLineItem[]>;
+    /**
+     * @public
+     * Get the parent of this line item. Returns the parent PluginLineItem if nested,
+     * or the PluginRecord if this is a top-level item in its record.
+     *
+     * @returns {Promise<PluginLineItem|PluginRecord>}
+     */
+    public getParent(): Promise<PluginLineItem | PluginRecord>;
+    /**
+     * @public
+     * Get the tree context of this line item: its ancestors and descendants in a single call.
+     * Ancestors are ordered from immediate parent to the top-level item (stops at the record boundary).
+     * Descendants are in depth-first (pre-order) and include children, grandchildren, etc.
+     *
+     * All returned descendants (and this item itself) will have their children pre-cached (so
+     * `getChildren()` returns instantly) and `getParent()` wired up, so you can either iterate
+     * the flat list or walk the tree structure.
+     *
+     * @returns {Promise<{ancestors: PluginLineItem[], descendants: PluginLineItem[]}>}
+     *
+     * @example
+     * const { ancestors, descendants } = await lineItem.getTreeContext();
+     * // ancestors[0] is the immediate parent
+     * // descendants are in depth-first order; iterate flat or walk via getChildren()
+     */
+    public getTreeContext(): Promise<{
+        ancestors: PluginLineItem[];
+        descendants: PluginLineItem[];
+    }>;
     /**
      * @public
      * Get the task status for task line items.
@@ -2221,7 +2272,8 @@ class PluginLineItem {
      * @public
      * Move this line item to a new location.
      *
-     * @param {PluginLineItem|null} newParent - new parent item, or null to keep the same parent
+     * @param {PluginLineItem|PluginRecord|null} newParent - PluginLineItem to move under that item,
+     *   PluginRecord to move as a top-level item in that record, or null to keep the same parent
      * @param {PluginLineItem|null} afterItem - insert after this item, or null to insert as first child
      * @returns {Promise<PluginLineItem|null>} the moved item with updated data, or null if move failed
      *
@@ -2232,8 +2284,12 @@ class PluginLineItem {
      * @example
      * // Move item to be after a sibling (reorder within same parent)
      * const movedItem = await lineItem.move(null, siblingItem);
+     *
+     * @example
+     * // Move item to be a top-level item in a record
+     * const movedItem = await lineItem.move(record, null);
      */
-    public move(newParent: PluginLineItem | null, afterItem: PluginLineItem | null): Promise<PluginLineItem | null>;
+    public move(newParent: PluginLineItem | PluginRecord | null, afterItem: PluginLineItem | null): Promise<PluginLineItem | null>;
     #private;
 }
 
@@ -2373,7 +2429,31 @@ class PluginPanel {
     public getNavigation(): any;
     /**
      * @public
-     * Navigate the panel to any new location
+     * Navigate the panel to a new location.
+     *
+     * There are two ways to use this method:
+     *
+     * **Direct navigation** — provide `type` and `rootId` to navigate to a known location:
+     * ```
+     * panel.navigateTo({
+     *     type: NAVIGATION_PANEL_EDITOR,
+     *     rootId: someDocumentGuid,
+     *     workspaceGuid: wsguid,
+     * });
+     * ```
+     *
+     * **Item-based navigation** — provide `itemGuid` to automatically resolve the item's
+     * document root and navigate there. Combine with `highlight: true` to scroll to and
+     * highlight the item within its parent document:
+     * ```
+     * panel.navigateTo({
+     *     itemGuid: someLineItemGuid,
+     *     highlight: true,
+     * });
+     * ```
+     *
+     * When `itemGuid` is provided, `type`, `rootId`, and `workspaceGuid` are resolved
+     * automatically. Returns a Promise<boolean> in this case (true if the item was found).
      *
      * @param {Object} navigation Navigation state
      * @param {string} navigation.type Panel type - use NAVIGATION_PANEL_EDITOR ('edit_panel') to open
@@ -2382,6 +2462,11 @@ class PluginPanel {
      * @param {string?} navigation.subId Sub ID
      * @param {string?} navigation.workspaceGuid Workspace GUID
      * @param {Object} [navigation.state] Additional state
+     * @param {string} [navigation.itemGuid] A line item guid to navigate to. Automatically resolves
+     *   the document root. When provided, `type`, `rootId`, and `workspaceGuid` are determined automatically.
+     * @param {boolean} [navigation.highlight] When true (and `itemGuid` is provided), scrolls to and
+     *   highlights the item within its parent document. Defaults to false.
+     * @returns {void | Promise<boolean>} void for direct navigation; Promise<boolean> when itemGuid is used
      */
     public navigateTo(navigation: {
         type: string;
@@ -2389,7 +2474,9 @@ class PluginPanel {
         subId: string | null;
         workspaceGuid: string | null;
         state?: any;
-    }): void;
+        itemGuid?: string;
+        highlight?: boolean;
+    }): void | Promise<boolean>;
     /**
      * @public
      * Navigate to a custom panel you registered using registerCustomPanel()
@@ -3318,7 +3405,7 @@ type PropertyField = {
      */
     active: boolean;
     /**
-     * - can user add multiple values for this property? TODO: not supported yet, always false
+     * - can user add multiple values for this property?
      */
     many: boolean;
     /**
