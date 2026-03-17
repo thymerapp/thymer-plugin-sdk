@@ -31,6 +31,7 @@ function countWordsFromSegments(segments) {
 
 /** @param {PluginLineItem} lineItem */
 function wordsAndLinesForOneItem(lineItem) {
+	const PLUGIN_LINE_ITEM_TYPE_REF = 'ref'; // see types.d.ts
 	// We don't count line refs towards the number of lines. Its target will be included in the document tree, 
 	// and we'll count that as the actual line instead. The ref itself won't include any words, just a pointer.
 	let countAsLine = lineItem.type == PLUGIN_LINE_ITEM_TYPE_REF ? false : true;
