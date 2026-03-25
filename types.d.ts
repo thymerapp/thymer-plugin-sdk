@@ -173,6 +173,16 @@ class CollectionPlugin {
     public onUnload(): void;
     /**
      * @public
+     * Access to your own collection. Use this to get records, create records,
+     * and access collection-level settings.
+     *
+     * @example
+     * const records = await this.collection.getAllRecords();
+     * const newGuid = this.collection.createRecord("New Record");
+     */
+    public collection: PluginCollectionAPI;
+    /**
+     * @public
      * Functions to interact with the properties.
      */
     public properties: PropertiesAPI;
@@ -2639,28 +2649,52 @@ class PluginProperty {
     guid: string;
     /**
      * @public
-     * Get the property value as a number, or null if a number value is not available.
+     * Get the first property value as a number, or null if a number value is not available.
+     * For multi-value properties, only returns the first value.
+     * Use numbers() to get all values, or record.numbers(name) as a shorthand.
      *
      * @returns {number?}
      */
     public number(): number | null;
     /**
      * @public
-     * Get the property value as a string, or null if a string value is not available.
+     * Get all property values as numbers, filtering out any that can't be parsed.
+     * For single-value properties, returns a one-element array (or empty if no value).
+     *
+     * @returns {number[]}
+     */
+    public numbers(): number[];
+    /**
+     * @public
+     * Get the first property value as a string, or null if a string value is not available.
+     * For multi-value properties, only returns the first value.
+     * Use texts() to get all values, or record.texts(name) as a shorthand.
      *
      * @returns {string?}
      */
     public text(): string | null;
     /**
      * @public
-     * Get the "id" of the choice (enum) value, or null if a choice value is not available.
+     * Get all property values as strings.
+     * For single-value properties, returns a one-element array (or empty if no value).
+     *
+     * @returns {string[]}
+     */
+    public texts(): string[];
+    /**
+     * @public
+     * Get the "id" of the first selected choice (enum) value, or null if a choice value is not available.
+     * For multi-value choice properties, only returns the first selected value.
+     * Use selectedChoices() to get all selected choice IDs, or record.selectedChoices(name) as a shorthand.
      *
      * @returns {string?}
      */
     public choice(): string | null;
     /**
      * @public
-     * Get the label of the choice (enum) value, or null if a choice value is not available.
+     * Get the label of the first selected choice (enum) value, or null if a choice value is not available.
+     * For multi-value choice properties, only returns the first selected label.
+     * Use selectedChoiceLabels() to get all selected choice labels.
      *
      * @example
      * const statusLabel = record.prop("Status").choiceLabel(); // "In Progress"
@@ -2671,6 +2705,24 @@ class PluginProperty {
     public choiceLabel(): string | null;
     /**
      * @public
+     * Get all selected choice IDs for a multi-value choice property.
+     * For single-value choice properties, returns a one-element array (or empty if no value).
+     * Returns empty array if this is not a choice-type property.
+     *
+     * @returns {string[]}
+     */
+    public selectedChoices(): string[];
+    /**
+     * @public
+     * Get all selected choice labels for a multi-value choice property.
+     * For single-value choice properties, returns a one-element array (or empty if no value).
+     * Returns empty array if this is not a choice-type property.
+     *
+     * @returns {string[]}
+     */
+    public selectedChoiceLabels(): string[];
+    /**
+     * @public
      * Get all available choices for this choice/enum property field.
      * Returns null if this is not a choice-type property.
      *
@@ -2679,41 +2731,98 @@ class PluginProperty {
     public choices(): PropertyChoiceOption[] | null;
     /**
      * @public
-     * Set the property value (should be a valid value for this property type)
+     * Set the property value. Accepts a single value or an array of values for multi-value
+     * properties. When an array is passed, all existing values are replaced. When a single
+     * value is passed on a multi-value property, it replaces all values with that one value.
      *
-     * @param {any} v
+     * @param {any} v - a single value, or an array of values for multi-value properties
      */
     public set(v: any): void;
     /**
      * @public
-     * Shortcut for setting a date value from a JavaScript Date object.
+     * Add a value to a multi-value property. If the property does not support multiple values,
+     * this behaves like set().
      *
-     * @param {Date} date
+     * @param {any} v
      */
-    public setFromDate(date: Date): void;
+    public addValue(v: any): void;
+    /**
+     * @public
+     * Remove a value from a multi-value property by strict equality.
+     * For single-value properties, clears the value if it matches.
+     *
+     * @param {any} v
+     * @returns {boolean} true if a value was removed
+     */
+    public removeValue(v: any): boolean;
+    /**
+     * @public
+     * Remove a value from a multi-value property by index (0-based).
+     *
+     * @param {number} index
+     * @returns {boolean} true if a value was removed
+     */
+    public removeValueAt(index: number): boolean;
+    /**
+     * @public
+     * Shortcut for setting a date value from a JavaScript Date object.
+     * Accepts a single Date or an array of Dates for multi-value properties.
+     *
+     * @param {Date|Date[]} date
+     */
+    public setFromDate(date: Date | Date[]): void;
     /**
      * @public
      * If this property is of type Choice, set the value to the choice/status/enum with the given
-     * choiceName.
+     * choiceName. Accepts a single choice name or an array of choice names for multi-value properties.
      *
      * @example
      * record.prop("Status").setChoice("Pending");
+     * record.prop("Categories").setChoice(["Bug", "Priority"]);
      *
-     * @param {string} choiceName
-     * @returns {boolean} true if the choice was set, false if the property is not a choice or the choice was not found
+     * @param {string|string[]} choiceName
+     * @returns {boolean} true if the choice(s) were set, false if the property is not a choice or a choice was not found
      */
-    public setChoice(choiceName: string): boolean;
+    public setChoice(choiceName: string | string[]): boolean;
     /**
      * @public
-     * Get the property value as a JavaScript Date object (in your browser's local timezone),
+     * Add a choice value to a multi-value choice property.
+     *
+     * @param {string} choiceName - choice label or ID to add
+     * @returns {boolean} true if the choice was added
+     */
+    public addChoice(choiceName: string): boolean;
+    /**
+     * @public
+     * Remove a choice value from a multi-value choice property.
+     *
+     * @param {string} choiceName - choice label or ID to remove
+     * @returns {boolean} true if the choice was removed
+     */
+    public removeChoice(choiceName: string): boolean;
+    /**
+     * @public
+     * Get the first property value as a JavaScript Date object (in your browser's local timezone),
      * or null if a datetime value is not available. For date ranges, returns the start date only.
+     * For multi-value properties, only returns the first value.
+     * Use dates() to get all values, or record.dates(name) as a shorthand.
      *
      * @returns {Date?}
      */
     public date(): Date | null;
     /**
      * @public
-     * Get the property value as a DateTime object, or null if a datetime value is not available.
+     * Get all property values as JavaScript Date objects (in your browser's local timezone).
+     * For single-value properties, returns a one-element array (or empty if no value).
+     *
+     * @returns {Date[]}
+     */
+    public dates(): Date[];
+    /**
+     * @public
+     * Get the first property value as a DateTime object, or null if a datetime value is not available.
+     * For multi-value properties, only returns the first value.
+     * Use datetimes() to get all values, or record.datetimes(name) as a shorthand.
      *
      * @example
      * const dt = record.prop("Due Date").datetime();
@@ -2727,12 +2836,87 @@ class PluginProperty {
     public datetime(): DateTime | null;
     /**
      * @public
-     * Get the property value as a PropertyFileValue, or null if this property is not a file-type property
+     * Get all property values as DateTime objects.
+     * For single-value properties, returns a one-element array (or empty if no value).
+     *
+     * @returns {DateTime[]}
+     */
+    public datetimes(): DateTime[];
+    /**
+     * @public
+     * Get the first property value as a PropertyFileValue, or null if this property is not a file-type property
      * (PROP_TYPE_FILE, PROP_TYPE_IMAGE, or PROP_TYPE_BANNER).
+     * For multi-value properties, only returns the first value.
+     * Use files() to get all values.
      *
      * @returns {PropertyFileValue?}
      */
     public file(): PropertyFileValue | null;
+    /**
+     * @public
+     * Get all property values as PropertyFileValue objects.
+     * For single-value file properties, returns a one-element array (or empty if no value).
+     * Returns empty array if this is not a file-type property.
+     *
+     * @returns {PropertyFileValue[]}
+     */
+    public files(): PropertyFileValue[];
+    /**
+     * @public
+     * Get the first property value as a PluginUser, or null if this is not a user-type property
+     * or no user is set.
+     * For multi-value properties, only returns the first value.
+     * Use users() to get all values, or record.users(name) as a shorthand.
+     *
+     * @example
+     * const assignee = record.prop("Assignee").user();
+     * if (assignee) console.log(assignee.getDisplayName());
+     *
+     * @returns {PluginUser?}
+     */
+    public user(): PluginUser | null;
+    /**
+     * @public
+     * Get all property values as PluginUser objects.
+     * For single-value properties, returns a one-element array (or empty if no value).
+     * Returns empty array if this is not a user-type property.
+     * Unresolvable user GUIDs (e.g. removed users) are silently skipped.
+     *
+     * @example
+     * const reviewers = record.prop("Reviewers").users();
+     * reviewers.forEach(u => console.log(u.getDisplayName()));
+     *
+     * @returns {PluginUser[]}
+     */
+    public users(): PluginUser[];
+    /**
+     * @public
+     * Get the first property value as a linked PluginRecord, or null if this is not a record-type
+     * property or no record is linked.
+     * For multi-value properties, only returns the first value.
+     * Use linkedRecords() to get all values, or record.linkedRecords(name) as a shorthand.
+     *
+     * @example
+     * const parent = record.prop("Parent Task").linkedRecord();
+     * if (parent) console.log(parent.getName());
+     *
+     * @returns {PluginRecord?}
+     */
+    public linkedRecord(): PluginRecord | null;
+    /**
+     * @public
+     * Get all property values as linked PluginRecord objects.
+     * For single-value properties, returns a one-element array (or empty if no value).
+     * Returns empty array if this is not a record-type property.
+     * Unresolvable record GUIDs (e.g. deleted records) are silently skipped.
+     *
+     * @example
+     * const deps = record.prop("Dependencies").linkedRecords();
+     * deps.forEach(r => console.log(r.getName()));
+     *
+     * @returns {PluginRecord[]}
+     */
+    public linkedRecords(): PluginRecord[];
     /**
      * @public
      * Get the PluginBlob for this file property, or null if no blob GUID is set (in the case of a default
@@ -2760,6 +2944,29 @@ class PluginProperty {
      * @returns {boolean} true if set successfully, false otherwise
      */
     public setFile(fileValue: PropertyFileValue): boolean;
+    /**
+     * @public
+     * Returns true if this property field supports multiple values.
+     *
+     * @returns {boolean}
+     */
+    public isMultiValue(): boolean;
+    /**
+     * @public
+     * Get the number of values currently set on this property.
+     * Returns 0 if no value is set.
+     *
+     * @returns {number}
+     */
+    public count(): number;
+    /**
+     * @public
+     * Get all raw property values as an array. Returns an empty array if no value is set.
+     * For single-value properties, returns a one-element array.
+     *
+     * @returns {any[]}
+     */
+    public values(): any[];
     #private;
 }
 
@@ -2958,13 +3165,25 @@ class PluginRecord {
     public getAllProperties(): PluginProperty[];
     /**
      * @public
+     * Get a PluginProperty for the given property name or guid.
+     * Use this to access multi-value methods like .numbers(), .texts(), .selectedChoices(),
+     * .addValue(), .removeValue(), etc.
+     *
+     * @example
+     * // Single value access
+     * const price = record.prop("Price").number();
+     * // Multi-value access
+     * const tags = record.prop("Tags").selectedChoices();
+     * record.prop("Tags").addChoice("Bug");
+     *
      * @param {string} name - Name or guid of the Property (first tries to find by name, then by guid)
      * @returns {PluginProperty?}
      */
     public prop(name: string): PluginProperty | null;
     /**
      * @public
-     * Shorthand for prop(name).number()
+     * Shorthand for prop(name).number(). Returns the first value only.
+     * For multi-value properties, use record.numbers(name) instead.
      *
      * @example
      * const price = record.number("Price");
@@ -2975,7 +3194,8 @@ class PluginRecord {
     public number(name: string): number | null;
     /**
      * @public
-     * Shorthand for prop(name).date()
+     * Shorthand for prop(name).date(). Returns the first value only.
+     * For multi-value properties, use record.dates(name) instead.
      *
      * @example
      * const startDate = record.date("Start Date");
@@ -2986,7 +3206,8 @@ class PluginRecord {
     public date(name: string): Date | null;
     /**
      * @public
-     * Shorthand for prop(name).datetime()
+     * Shorthand for prop(name).datetime(). Returns the first value only.
+     * For multi-value properties, use record.datetimes(name) instead.
      *
      * @example
      * const dt = record.datetime("Due Date");
@@ -2997,7 +3218,8 @@ class PluginRecord {
     public datetime(name: string): DateTime | null;
     /**
      * @public
-     * Shorthand for prop(name).text()
+     * Shorthand for prop(name).text(). Returns the first value only.
+     * For multi-value properties, use record.texts(name) instead.
      *
      * @example
      * const name = record.text("Name");
@@ -3008,7 +3230,8 @@ class PluginRecord {
     public text(name: string): string | null;
     /**
      * @public
-     * Shorthand for prop(name).choice()
+     * Shorthand for prop(name).choice(). Returns the first selected choice ID only.
+     * For multi-value choice properties, use record.selectedChoices(name) instead.
      *
      * @example
      * const status = record.choice("Status");
@@ -3017,6 +3240,107 @@ class PluginRecord {
      * @returns {string?}
      */
     public choice(name: string): string | null;
+    /**
+     * @public
+     * Shorthand for prop(name).numbers(). Returns all values as numbers.
+     *
+     * @example
+     * const scores = record.numbers("Scores");
+     *
+     * @param {string} name
+     * @returns {number[]}
+     */
+    public numbers(name: string): number[];
+    /**
+     * @public
+     * Shorthand for prop(name).texts(). Returns all values as strings.
+     *
+     * @example
+     * const tags = record.texts("Tags");
+     *
+     * @param {string} name
+     * @returns {string[]}
+     */
+    public texts(name: string): string[];
+    /**
+     * @public
+     * Shorthand for prop(name).dates(). Returns all values as Date objects.
+     *
+     * @example
+     * const milestones = record.dates("Milestones");
+     *
+     * @param {string} name
+     * @returns {Date[]}
+     */
+    public dates(name: string): Date[];
+    /**
+     * @public
+     * Shorthand for prop(name).datetimes(). Returns all values as DateTime objects.
+     *
+     * @example
+     * const milestones = record.datetimes("Milestones");
+     *
+     * @param {string} name
+     * @returns {DateTime[]}
+     */
+    public datetimes(name: string): DateTime[];
+    /**
+     * @public
+     * Shorthand for prop(name).selectedChoices(). Returns all selected choice IDs.
+     *
+     * @example
+     * const labels = record.selectedChoices("Labels");
+     *
+     * @param {string} name
+     * @returns {string[]}
+     */
+    public selectedChoices(name: string): string[];
+    /**
+     * @public
+     * Shorthand for prop(name).user(). Returns the first linked user only.
+     * For multi-value properties, use record.users(name) instead.
+     *
+     * @example
+     * const assignee = record.user("Assignee");
+     *
+     * @param {string} name
+     * @returns {PluginUser?}
+     */
+    public user(name: string): PluginUser | null;
+    /**
+     * @public
+     * Shorthand for prop(name).users(). Returns all linked users.
+     *
+     * @example
+     * const reviewers = record.users("Reviewers");
+     *
+     * @param {string} name
+     * @returns {PluginUser[]}
+     */
+    public users(name: string): PluginUser[];
+    /**
+     * @public
+     * Shorthand for prop(name).linkedRecord(). Returns the first linked record only.
+     * For multi-value properties, use record.linkedRecords(name) instead.
+     *
+     * @example
+     * const parent = record.linkedRecord("Parent Task");
+     *
+     * @param {string} name
+     * @returns {PluginRecord?}
+     */
+    public linkedRecord(name: string): PluginRecord | null;
+    /**
+     * @public
+     * Shorthand for prop(name).linkedRecords(). Returns all linked records.
+     *
+     * @example
+     * const deps = record.linkedRecords("Dependencies");
+     *
+     * @param {string} name
+     * @returns {PluginRecord[]}
+     */
+    public linkedRecords(name: string): PluginRecord[];
     #private;
 }
 
