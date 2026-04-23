@@ -134,6 +134,69 @@ class CollectionPlugin {
     customRecordTitleFunction: (row: any) => string;
     /**
      * @public
+     * Register a custom sidebar rendering hook for this collection. When the
+     * collection's sidebar display mode is set to "Custom", this function is
+     * called to produce the sidebar contents.
+     *
+     * Return an array of PluginSidebarNode objects. Each node can have children
+     * for tree rendering, or be a divider for group headings.
+     *
+     * @example
+     * this.customizeSidebarItems(async ({records}) => {
+     *     const nodes = [];
+     *     for (const record of records) {
+     *         nodes.push({
+     *             label: record.text("Title"),
+     *             icon: "ti-file",
+     *             recordGuid: record.guid(),
+     *         });
+     *     }
+     *     return nodes;
+     * });
+     *
+     * @param {({records}: {records: PluginRecord[]}) => Promise<PluginSidebarNode[]>} fn
+     */
+    public customizeSidebarItems(fn: ({ records }: {
+        records: PluginRecord[];
+    }) => Promise<PluginSidebarNode[]>): void;
+    customSidebarHook: () => Promise<PluginSidebarNode[]>;
+    /**
+     * @public
+     * Register a custom sidebar widget that renders arbitrary UI above the
+     * collection's records in the sidebar. The widget is independent of the
+     * "Display in Sidebar" setting — records are still shown (or hidden)
+     * according to that setting, and the widget is rendered above them.
+     *
+     * The render function receives a container element and a context object
+     * with the collection's records and a refresh callback. Return a cleanup
+     * function to be called when the widget is removed or re-rendered.
+     *
+     * For global (non-collection) sidebar widgets, use this.ui.addSidebarWidget()
+     * instead.
+     *
+     * @example
+     * const widget = this.setSidebarWidget((container, {records, refresh}) => {
+     *     container.innerHTML = '<div class="my-widget">Hello</div>';
+     *     const onClick = () => { ... };
+     *     container.addEventListener('click', onClick);
+     *     return () => container.removeEventListener('click', onClick);
+     * });
+     *
+     * // Later: widget.remove() or widget.refresh()
+     *
+     * @param {(container: HTMLElement, context: {records: PluginRecord[], refresh: () => void}) => (() => void) | void} render
+     * @returns {{remove: () => void, refresh: () => void}}
+     */
+    public setSidebarWidget(render: (container: HTMLElement, context: {
+        records: PluginRecord[];
+        refresh: () => void;
+    }) => (() => void) | void): {
+        remove: () => void;
+        refresh: () => void;
+    };
+    widgetSidebarHook: any;
+    /**
+     * @public
      *
      * Adds a navigation button to the collection's panel navigation bar
      * @param {Object} options Navigation button options
@@ -654,6 +717,7 @@ type EnumColors = {
     sky: "11";
     indigo: "12";
     zinc: "13";
+    yellow: "14";
 };
 
 /**
@@ -1385,6 +1449,23 @@ class PluginCollectionAPI extends PluginPluginAPIBase {
      * @param {PropertyFileValue} fileValue
      */
     public setBanner(fileValue: PropertyFileValue): void;
+    /**
+     * @public
+     * Check whether sub-pages are enabled for this collection.
+     *
+     * @returns {boolean}
+     */
+    public hasSubPages(): boolean;
+    /**
+     * @public
+     * Enable or disable sub-pages for this collection.
+     * When enabled, records can be nested under other records using
+     * `record.setSubPageOf(parentGuid)`.
+     *
+     * @param {boolean} enabled
+     * @returns {Promise<boolean>} true if the change was saved successfully
+     */
+    public enableSubPages(enabled: boolean): Promise<boolean>;
 }
 
 type PluginCommandPaletteCommand = {
@@ -1417,13 +1498,17 @@ type PluginConfiguration = {
      */
     description: string;
     /**
-     * - show items in sidebar?
+     * - show items in sidebar? (legacy, use sidebar_display_mode when hasNewSidebarNav)
      */
     show_sidebar_items: boolean;
     /**
      * - show items in command palette?
      */
     show_cmdpal_items: boolean;
+    /**
+     * - how to display pages in the sidebar (new sidebar nav)
+     */
+    sidebar_display_mode?: SidebarDisplaySettings;
     /**
      * - Optional. Was configurable in Sidebar tab in Collection Dialog (see 'id--action-select' in dialogs.js), now only configurable in config/code (e.g. Journal plugin uses it)
      */
@@ -3341,6 +3426,32 @@ class PluginRecord {
      * @returns {PluginRecord[]}
      */
     public linkedRecords(name: string): PluginRecord[];
+    /**
+     * @public
+     * Get the parent page of this record (the page it is a sub-page of).
+     * Returns null if sub-pages are not enabled for this collection,
+     * if no parent is set, or if the parent chain contains a cycle.
+     *
+     * @returns {PluginRecord|null}
+     */
+    public getSubPageOf(): PluginRecord | null;
+    /**
+     * @public
+     * Set the parent page of this record, making it a sub-page of another page.
+     * Pass null to move the record to the root level (remove parent).
+     * Returns false if sub-pages are not enabled, the target doesn't exist,
+     * the target is not in the same collection, or setting the parent would
+     * create a cycle.
+     *
+     * @param {string|null} parentGuid - guid of the parent record, or null to remove
+     * @returns {boolean}
+     */
+    public setSubPageOf(parentGuid: string | null): boolean;
+    /**
+     * @public
+     * Move this record to the trash.
+     */
+    public trash(): void;
     #private;
 }
 
@@ -3376,6 +3487,41 @@ type PluginSideBarItem = {
      * Update the tooltip text
      */
     setTooltip: (newTooltip: string) => void;
+};
+
+type PluginSidebarNode = {
+    /**
+     * - display label
+     */
+    label: string;
+    /**
+     * - icon class name (e.g. "ti-file")
+     */
+    icon?: string;
+    /**
+     * - if set, clicking navigates to this record (unless onOpen is provided)
+     */
+    recordGuid?: string;
+    /**
+     * - custom click/confirm handler. When provided, takes priority over recordGuid navigation.
+     */
+    onOpen?: () => void;
+    /**
+     * - nested children (creates expandable tree node)
+     */
+    children?: PluginSidebarNode[];
+    /**
+     * - if true, renders as a divider/group heading (non-clickable)
+     */
+    isDivider?: boolean;
+    /**
+     * - custom render callback: receives the sidebar item's DOM node after creation
+     */
+    renderContent?: (node: HTMLElement) => void;
+    /**
+     * - cleanup callback called when the node is removed from the sidebar
+     */
+    onDestroy?: () => void;
 };
 
 type PluginSortDir = "asc" | "desc";
@@ -3781,10 +3927,49 @@ type PropertyFileValue = {
     original?: PropertyFileValue;
 };
 
+const SIDEBAR_DISPLAY_CUSTOM: "custom";
+
+const SIDEBAR_DISPLAY_DATE_CREATED: "date_created";
+
+const SIDEBAR_DISPLAY_DATE_MODIFIED: "date_modified";
+
+const SIDEBAR_DISPLAY_GROUP_BY_FIELD: "group_by_field";
+
+const SIDEBAR_DISPLAY_HIDDEN_COMPLETELY: "hidden_completely";
+
+const SIDEBAR_DISPLAY_HIDDEN_RECORDS: "hidden_records";
+
+const SIDEBAR_DISPLAY_LIST: "list";
+
+const SIDEBAR_DISPLAY_NEST_BY_FIELD: "nest_by_field";
+
+const SIDEBAR_DISPLAY_NESTED: "nested";
+
+type SidebarDisplayMode = typeof SIDEBAR_DISPLAY_HIDDEN_RECORDS | typeof SIDEBAR_DISPLAY_HIDDEN_COMPLETELY | typeof SIDEBAR_DISPLAY_LIST | typeof SIDEBAR_DISPLAY_NESTED | typeof SIDEBAR_DISPLAY_DATE_CREATED | typeof SIDEBAR_DISPLAY_DATE_MODIFIED | typeof SIDEBAR_DISPLAY_GROUP_BY_FIELD | typeof SIDEBAR_DISPLAY_NEST_BY_FIELD | typeof SIDEBAR_DISPLAY_CUSTOM;
+
+type SidebarDisplaySettings = {
+    mode: SidebarDisplayMode;
+    /**
+     * - field to group/nest by (for group_by_field and nest_by_field modes)
+     */
+    field_id?: string;
+};
+
 const SORT_DIR_ASC: "asc";
 
 const SORT_DIR_DESC: "desc";
 
+/**
+ * @typedef {Object} PluginSidebarNode@typedef {Object} PluginSidebarNode
+ * @property {string} label - display label
+ * @property {string} [icon] - icon class name (e.g. "ti-file")
+ * @property {string} [recordGuid] - if set, clicking navigates to this record (unless onOpen is provided)
+ * @property {() => void} [onOpen] - custom click/confirm handler. When provided, takes priority over recordGuid navigation.
+ * @property {PluginSidebarNode[]} [children] - nested children (creates expandable tree node)
+ * @property {boolean} [isDivider] - if true, renders as a divider/group heading (non-clickable)
+ * @property {(node: HTMLElement) => void} [renderContent] - custom render callback: receives the sidebar item's DOM node after creation
+ * @property {() => void} [onDestroy] - cleanup callback called when the node is removed from the sidebar
+ */
 class UIAPI {
 
     /**
@@ -3879,6 +4064,33 @@ class UIAPI {
         tooltip?: string;
         onClick?: () => void;
     }): PluginSideBarItem;
+    /**
+     * @public
+     *
+     * Adds a global widget to the sidebar (above collections). Use this for
+     * widgets that are not tied to a specific collection. For collection-scoped
+     * sidebar widgets, use CollectionPlugin.setSidebarWidget() instead.
+     *
+     * The render function receives a container element and a context with a
+     * refresh callback. Return a cleanup function from render to be called
+     * when the widget is removed or re-rendered.
+     *
+     * @example
+     * const widget = this.ui.addSidebarWidget((container, {refresh}) => {
+     *     container.innerHTML = '<div>My widget</div>';
+     *     return () => { /* cleanup *\/ };
+     * });
+     * // Later: widget.remove() or widget.refresh()
+     *
+     * @param {(container: HTMLElement, context: {refresh: () => void}) => (() => void) | void} render
+     * @returns {{remove: () => void, refresh: () => void}}
+     */
+    public addSidebarWidget(render: (container: HTMLElement, context: {
+        refresh: () => void;
+    }) => (() => void) | void): {
+        remove: () => void;
+        refresh: () => void;
+    };
     /**
      * @public
      *
