@@ -14,7 +14,7 @@
 
 const KANBAN_WIP_LIMIT = 3;
 
-export class Plugin extends CollectionPlugin {
+class Plugin extends CollectionPlugin {
 
 	onLoad() {
 		this.views.afterRenderBoardCard(null, ({ record, view, element, columnElement }) => {
