@@ -78,6 +78,10 @@ const COLLECTION_PRIMARY_ACTION_FIRST: "first";
  * @property {string} [invalid_query] - the (syntax)error message for the query
  * @property {string} [single_record_guid] - for use with COLLECTION_VIEW_SINGLE_RECORD
  * @property {Object<string, any>} [opts] - view-specific options
+ *
+ * Dynamic Collection-specific view properties (LINE_TYPE_DYNCOLLECTION only):
+ * @property {string} [result_type] - what to query: currently always 'document'
+ * @property {string[]} [source_collections] - collection GUIDs to query, or ['*'] for all
  */
 const COLLECTION_PRIMARY_ACTION_OVERVIEW: "overview";
 
@@ -321,10 +325,20 @@ type CollectionView = {
     single_record_guid?: string;
     /**
      * - view-specific options
+     *
+     * Dynamic Collection-specific view properties (LINE_TYPE_DYNCOLLECTION only):
      */
     opts?: {
         [x: string]: any;
     };
+    /**
+     * - what to query: currently always 'document'
+     */
+    result_type?: string;
+    /**
+     * - collection GUIDs to query, or ['*'] for all
+     */
+    source_collections?: string[];
 };
 
 type CollectionViewType = "table" | "board" | "gallery" | "calendar" | "record" | "custom";
@@ -341,6 +355,8 @@ class DataAPI {
     /**
      * @public
      * Create a new record
+     *
+     * Returns null if creation failed or is not supported, like on Global Plugins or Dynamic Collections.
      *
      * @param {string} title
      * @returns {string?} - guid of new record
@@ -370,6 +386,13 @@ class DataAPI {
     public getAllGlobalPlugins(): Promise<PluginGlobalPluginAPI[]>;
     /**
      * @public
+     * Get all dynamic collections in this workspace
+     *
+     * @returns {Promise<PluginDynamicCollectionAPI[]>}
+     */
+    public getAllDynamicCollections(): Promise<PluginDynamicCollectionAPI[]>;
+    /**
+     * @public
      * Create a new global plugin
      *
      * @returns {Promise<PluginGlobalPluginAPI|null>}
@@ -387,9 +410,9 @@ class DataAPI {
      * Get a plugin by its GUID
      *
      * @param {string} guid
-     * @returns {PluginGlobalPluginAPI|PluginCollectionAPI|null}
+     * @returns {PluginGlobalPluginAPI|PluginCollectionAPI|PluginDynamicCollectionAPI|null}
      */
-    public getPluginByGuid(guid: string): PluginGlobalPluginAPI | PluginCollectionAPI | null;
+    public getPluginByGuid(guid: string): PluginGlobalPluginAPI | PluginCollectionAPI | PluginDynamicCollectionAPI | null;
     /**
      * @public
      * Get all active users in this workspace
@@ -699,6 +722,79 @@ class DateTime {
  */
 type DateTimeValue = object;
 
+/**
+ * Base class for Dynamic Collection plugins. Extends the internal DynamicCollectionPlugin
+ * (which provides virtual fields, source plugin delegation, and unified field resolution)
+ * with the same public API surface as CollectionPlugin.
+ *
+ * Users write: class Plugin extends DynCollectionPlugin { onLoad() { ... } }
+ */
+class DynCollectionPlugin {
+
+    /**
+     * @public
+     * Get the plugin's configuration.
+     *
+     * @returns {PluginConfiguration}
+     */
+    public getConfiguration(): PluginConfiguration;
+    /**
+     * @public
+     * Get the name of the collection
+     *
+     * @returns {string}
+     */
+    public getName(): string;
+    /**
+     * @public
+     *
+     * This is called when the plugin is initialized.
+     */
+    public onLoad(): void;
+    /**
+     * @public
+     *
+     * This is called when the plugin is unloaded.
+     */
+    public onUnload(): void;
+    /**
+     * @public
+     * Access to your own dynamic collection.
+     */
+    public collection: PluginDynamicCollectionAPI;
+    /**
+     * @public
+     * Functions to interact with the properties.
+     */
+    public properties: PropertiesAPI;
+    /**
+     * @public
+     * Functions to interact with the views.
+     */
+    public views: ViewsAPI;
+    /**
+     * @public
+     * Functions to interact with the UI.
+     */
+    public ui: UIAPI;
+    /**
+     * @public
+     * Functions to interact with data.
+     */
+    public data: DataAPI;
+    /**
+     * @public
+     * Functions for real-time WebSocket messaging.
+     */
+    public ws: WebSocketAPI;
+    /**
+     * @public
+     * Subscribe to data, UI, and lifecycle events.
+     */
+    public events: EventsAPI;
+
+}
+
 /** @type {EnumColors} */
 const ENUM_COLORS: EnumColors;
 
@@ -858,7 +954,6 @@ namespace ExampleConfigurationJSON {
         let views: boolean;
         let sidebar: boolean;
     }
-    let page_field_ids: string[];
     let sidebar_record_sort_field_id: string;
     let sidebar_record_sort_dir: string;
     let fields_1: ({
@@ -1214,7 +1309,8 @@ const PLUGIN_LINE_ITEM_SEGMENT_TYPE_REF: "ref";
  * PLUGIN_TASK_STATUS_IMPORTANT|
  * PLUGIN_TASK_STATUS_DISCUSS|
  * PLUGIN_TASK_STATUS_ALERT|
- * PLUGIN_TASK_STATUS_STARRED} PluginTaskStatus
+ * PLUGIN_TASK_STATUS_STARRED|
+ * PLUGIN_TASK_STATUS_CANCELED} PluginTaskStatus
  */
 const PLUGIN_LINE_ITEM_SEGMENT_TYPE_TEXT: "text";
 
@@ -1268,6 +1364,8 @@ const PLUGIN_TASK_STATUS_ALERT: "alert";
 
 const PLUGIN_TASK_STATUS_BILLABLE: "billable";
 
+const PLUGIN_TASK_STATUS_CANCELED: "canceled";
+
 const PLUGIN_TASK_STATUS_DISCUSS: "discuss";
 
 const PLUGIN_TASK_STATUS_DONE: "done";
@@ -1306,6 +1404,23 @@ const PLUGIN_TASK_STATUS_STARRED: "starred";
 const PLUGIN_TASK_STATUS_STARTED: "started";
 
 const PLUGIN_TASK_STATUS_WAITING: "waiting";
+
+/**
+ * @public
+ * Represents a back-reference from another record to this record, with details
+ * about how the reference is made.
+ */
+class PluginBackReference {
+
+    /** @type {PluginRecord} */
+    record: PluginRecord;
+    /** @type {"line" | "property"} */
+    kind: "line" | "property";
+    /** @type {string?} */
+    lineItemGuid: string | null;
+    /** @type {string?} */
+    propertyId: string | null;
+}
 
 /**
  * @public
@@ -1498,6 +1613,10 @@ type PluginConfiguration = {
      */
     description: string;
     /**
+     * - global plugin only: when true, plugin code is not loaded/executed
+     */
+    off?: boolean;
+    /**
      * - show items in sidebar? (legacy, use sidebar_display_mode when hasNewSidebarNav)
      */
     show_sidebar_items: boolean;
@@ -1526,9 +1645,9 @@ type PluginConfiguration = {
      */
     fields: PropertyField[];
     /**
-     * - list of field ids (from PluginConfiguration.fields) we want to show on item pages
+     * - Optional, not used at the moment (used before property view dropdown was added)
      */
-    page_field_ids: string[];
+    page_field_ids?: string[];
     /**
      * - one of [field.id for field in fields]
      */
@@ -1623,6 +1742,55 @@ type PluginDropdownOption = {
      */
     onSelected?: () => void;
 };
+
+class PluginDynamicCollectionAPI extends PluginPluginAPIBase {
+    /**
+     * @public
+     * Get the code, config, and CSS currently used by the plugin.
+     *
+     * @returns {{code: string, css: string, json: PluginConfiguration}}
+     */
+    public getExistingCodeAndConfig(): {
+        code: string;
+        css: string;
+        json: PluginConfiguration;
+    };
+    /**
+     * @public
+     * Get the guid of the dynamic collection
+     *
+     * @returns {string}
+     */
+    public getGuid(): string;
+    /**
+     * @public
+     * Get the plugin's configuration.
+     *
+     * @returns {PluginConfiguration}
+     */
+    public getConfiguration(): PluginConfiguration;
+    /**
+     * @public
+     * Get the name of the dynamic collection
+     *
+     * @returns {string}
+     */
+    public getName(): string;
+    /**
+     * @public
+     * Get all records matching a specific view's filters and source collections.
+     *
+     * Unlike a regular collection, a dynamic collection does not own any records.
+     * Instead, each view defines which source collections to pull from, what result
+     * type to show, and which query filters to apply. Because of this, "all records"
+     * only makes sense in the context of a particular view — different views can
+     * return completely different sets of records.
+     *
+     * @param {string} viewNameOrGuid - Name or guid of the View
+     * @returns {Promise<PluginRecord[]>}
+     */
+    public getAllRecords(viewNameOrGuid: string): Promise<PluginRecord[]>;
+}
 
 /**
  * @typedef {'collection.created'|'collection.updated'|'global-plugin.created'|'global-plugin.updated'|'record.created'|'record.updated'|'record.moved'|'lineitem.created'|'lineitem.updated'|'lineitem.moved'|'lineitem.undeleted'|'lineitem.deleted'|'blob.updated'|'user.updated'|'panel.navigated'|'panel.closed'|'panel.focused'|'reload'} PluginEventName
@@ -2244,6 +2412,8 @@ class PluginLineItem {
      * - null value to delete a property
      * - existing properties are overwritten
      * - properties for which no keys are provided are not touched
+     * - meta properties are shared: any plugin may read or write them, so consider
+     *   namespacing keys meant only for your plugin and read defensively
      *
      * @param {Record<string, any>} props - Object with property key-value pairs
      * @returns {Promise<boolean>} true if successful
@@ -3089,9 +3259,24 @@ class PluginRecord {
      * @public
      * Get all records that reference this record or any of its line items.
      *
+     * See also {@link getBackReferences} for a detailed variant that includes
+     * the reference kind, source line item guid, and property id.
+     *
      * @returns {Promise<PluginRecord[]>}
      */
     public getBackReferenceRecords(): Promise<PluginRecord[]>;
+    /**
+     * @public
+     * Get detailed information about all references pointing to this record or any of its line items.
+     * Each result includes the source record, the kind of reference ("line" or "property"),
+     * and either the source line item guid (for line references) or the property id (for property references).
+     *
+     * See also {@link getBackReferenceRecords} for a simpler variant that only returns the
+     * source records without reference details.
+     *
+     * @returns {Promise<PluginBackReference[]>}
+     */
+    public getBackReferences(): Promise<PluginBackReference[]>;
     /**
      * @public
      * Move this record to a different collection.
@@ -3234,8 +3419,8 @@ class PluginRecord {
     public getLineItems(expandReferences?: boolean): Promise<PluginLineItem[]>;
     /**
      * @public
-     * Get all properties of the record. If viewName is provided, only return properties that are visible
-     * in that view. If no viewName is provided, return properties as visible when viewing the page in the editor.
+     * Get properties of the record. If viewName is provided, only return properties that are visible
+     * in that view. If no viewName is provided, return all active properties of the record.
      *
      * @param {string?} viewName
      * @returns {PluginProperty[]}
@@ -3537,7 +3722,7 @@ type PluginStatusBarItem = {
     getElement: () => HTMLElement | null;
 };
 
-type PluginTaskStatus = "none" | "done" | "started" | "waiting" | "billable" | "important" | "discuss" | "alert" | "starred";
+type PluginTaskStatus = "none" | "done" | "started" | "waiting" | "billable" | "important" | "discuss" | "alert" | "starred" | "canceled";
 
 type PluginToaster = {
     /**
@@ -3584,6 +3769,41 @@ class PluginViewConfig {
     guid: string;
     /** @type {PluginViewType} */
     type: PluginViewType;
+    /**
+     * @public
+     * Get the search query filter for this view, if any.
+     *
+     * @returns {string?}
+     */
+    public getQuery(): string | null;
+    /**
+     * @public
+     * Get the source collections for this view (dynamic collections only).
+     * Returns an array of PluginCollectionAPI objects for the source collections.
+     * Returns an empty array for non-dynamic collections.
+     * If the view is configured to pull from all collections, returns all
+     * regular collections in the workspace.
+     *
+     * @returns {PluginCollectionAPI[]}
+     */
+    public getSourceCollections(): PluginCollectionAPI[];
+    /**
+     * @public
+     * Get the sort property for this view, if any.
+     *
+     * @returns {{name: string, id: string}?}
+     */
+    public getSortProperty(): {
+        name: string;
+        id: string;
+    } | null;
+    /**
+     * @public
+     * Get the sort direction for this view.
+     *
+     * @returns {import("./plugin_api.js").PluginSortDir}
+     */
+    public getSortDirection(): PluginSortDir;
     #private;
 }
 
@@ -4043,6 +4263,7 @@ class UIAPI {
     /**
      * @public
      * Add global CSS to the app.
+     * Use [data-plugin="Name"] to scope styles to a collection.
      *
      * @param {string} CSSString
      */
@@ -4295,7 +4516,58 @@ class ViewsAPI {
 
     /**
      * @public
-     * Registers a custom view type for the plugin.
+     * Get all views defined on this collection.
+     *
+     * @returns {PluginViewConfig[]}
+     */
+    public getAll(): PluginViewConfig[];
+    /**
+     * @public
+     * Get a view by name or guid.
+     *
+     * @param {string} nameOrGuid - Name or guid of the View
+     * @returns {PluginViewConfig?}
+     */
+    public getByName(nameOrGuid: string): PluginViewConfig | null;
+    /**
+     * @public
+     * Get all records for a view, with query filters applied and sorted using
+     * the view's sort settings.
+     *
+     * For dynamic collections this queries across source collections using the
+     * view's source_collections settings.
+     *
+     * @param {string} viewNameOrGuid - Name or guid of the View
+     * @returns {Promise<PluginRecord[]>}
+     */
+    public getAllRecordsInView(viewNameOrGuid: string): Promise<PluginRecord[]>;
+    /**
+     * @public
+     * Registers hooks for a custom view. The view must already exist in the plugin's JSON
+     * configuration with `"type": "custom"` before this method is called. This method attaches
+     * your rendering logic to that existing view.
+     *
+     * Two steps are required:
+     *
+     * 1. Add a view entry to your plugin's JSON configuration (via Edit as Code > Configuration,
+     *    or the Add View UI) with `"type": "custom"`:
+     *
+     *    ```json
+     *    { "id": "my_view", "label": "My View", "type": "custom", "shown": true }
+     *    ```
+     *
+     * 2. In your plugin's `onLoad()`, call `this.views.register()` with the matching label or ID:
+     *
+     *    ```js
+     *    this.views.register("My View", (viewCtx) => ({
+     *        onLoad: () => { ... },
+     *        onRefresh: ({records}) => { ... },
+     *        onDestroy: () => { ... },
+     *    }));
+     *    ```
+     *
+     * If no view with the given name or ID exists in the configuration, this method logs an
+     * error and does nothing.
      *
      * @param {string} viewName - Name or guid of the View (first tries to find by name, then by guid)
      * @param {(viewContext: PluginViewContext) => {
