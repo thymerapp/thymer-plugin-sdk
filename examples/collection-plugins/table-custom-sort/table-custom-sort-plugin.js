@@ -24,7 +24,7 @@
  * 
  */
 
-export class Plugin extends CollectionPlugin {
+class Plugin extends CollectionPlugin {
 
 	onLoad() {
 

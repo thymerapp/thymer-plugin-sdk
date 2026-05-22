@@ -19,7 +19,7 @@
 
 const KANBAN_WIP_LIMIT = 3;
 
-export class Plugin extends CollectionPlugin {
+class Plugin extends CollectionPlugin {
 
 	onLoad() {
 		console.log("Kanban WIP plugin loaded");

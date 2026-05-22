@@ -16,7 +16,7 @@
  * - Using "link to another record" property type as a foreign key of sorts, to link cards together (to show the dependency)
  */
 
-export class Plugin extends CollectionPlugin {
+class Plugin extends CollectionPlugin {
 
 	/**
 	 * @param {PluginRecord} otherCard  - other card 

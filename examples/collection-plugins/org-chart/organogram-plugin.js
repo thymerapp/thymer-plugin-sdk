@@ -33,7 +33,7 @@
  * | Mina     | Grace   |
  */
 
-export class Plugin extends CollectionPlugin {
+class Plugin extends CollectionPlugin {
 
 	onLoad() {
 		console.log("People plugin loaded");
