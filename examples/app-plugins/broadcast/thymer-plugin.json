@@ -1,0 +1,13 @@
+{
+  "id": "thymer.examples.broadcast",
+  "name": "Broadcast Demo",
+  "author": "Thymer",
+  "version": "1.0.0",
+  "type": "global",
+  "description": "Demo plugin showing real-time messaging between users",
+  "homepage": "https://github.com/thymerapp/thymer-plugin-sdk",
+  "files": {
+    "config": "broadcast-plugin.json",
+    "js": "broadcast-plugin.js"
+  }
+}

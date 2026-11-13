@@ -1,0 +1,13 @@
+{
+  "id": "thymer.examples.move-completed-tasks",
+  "name": "Move Completed Tasks",
+  "author": "Thymer",
+  "version": "1.0.0",
+  "type": "global",
+  "description": "Adds a command to move completed tasks to the bottom of their sibling lists",
+  "homepage": "https://github.com/thymerapp/thymer-plugin-sdk",
+  "files": {
+    "config": "move-completed-tasks-plugin.json",
+    "js": "move-completed-tasks-plugin.js"
+  }
+}

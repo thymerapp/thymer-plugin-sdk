@@ -1,0 +1,13 @@
+{
+  "id": "thymer.examples.kanban-wip",
+  "name": "Kanban WIP",
+  "author": "Thymer",
+  "version": "1.0.0",
+  "type": "collection",
+  "description": "Kanban board with WIP limits example",
+  "homepage": "https://github.com/thymerapp/thymer-plugin-sdk",
+  "files": {
+    "config": "kanban-wip-plugin.json",
+    "js": "kanban-wip-plugin.js"
+  }
+}

@@ -5,8 +5,8 @@
         "strict": true,
         "declaration": true,
         "target": "ES2022",
-        "module": "ES2022",
-        "moduleResolution": "node",
+        "module": "Node16",
+        "moduleResolution": "node16",
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
         "resolveJsonModule": true,
@@ -14,8 +14,7 @@
         "forceConsistentCasingInFileNames": true
     },
     "include": [
-        "*.js",
-        "*.ts",
+        "plugin.js",
         "*.d.ts"
     ],
     "exclude": [

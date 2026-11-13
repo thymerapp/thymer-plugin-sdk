@@ -1,0 +1,71 @@
+/* Loaded only for Ocean Light; other styles inherit Thymer's default light theme. */
+html:root {
+	color-scheme: light;
+
+	/* Background palette: higher numbers are lighter in this light variant. */
+	--color-bg-50: #536d87;
+	--color-bg-100: #698099;
+	--color-bg-150: #7d91a7;
+	--color-bg-200: #8fa2b6;
+	--color-bg-300: #afc0d1;
+	--color-bg-400: #cfdeeb;
+	--color-bg-500: #dde8f2;
+	--color-bg-600: #e4eef7;
+	--color-bg-700: #eaf2f9;
+	--color-bg-800: #f1f6fb;
+	--color-bg-900: #f8fbff;
+	--color-bg-950: #fcfdff;
+	--color-bg-500-50: #dde8f280;
+	--color-bg-950-50: #fcfdff80;
+
+	/* Text palette: lower numbers give stronger contrast against light surfaces. */
+	--color-text-50: #172d43;
+	--color-text-100: #20384e;
+	--color-text-200: #2b4359;
+	--color-text-300: #354b61;
+	--color-text-400: #40566b;
+	--color-text-500: #465d73;
+	--color-text-600: #4e657b;
+	--color-text-700: #556c82;
+	--color-text-800: #60768a;
+	--color-text-900: #8296a8;
+	--color-text-950: #b3c1ce;
+
+	/* Accents used by links, buttons, selected items, and focus indicators. */
+	--color-primary-50: #f0f7ff;
+	--color-primary-100: #e5f0fc;
+	--color-primary-200: #d2e5f8;
+	--color-primary-300: #abcde9;
+	--color-primary-400: #7eadd6;
+	--color-primary-500: #6397c5;
+	--color-primary-600: #6397c5;
+	--color-primary-700: #376f9e;
+	--color-primary-800: #5b92bf;
+	--color-primary-900: #bdd6ec;
+	--color-primary-950: #e2eef9;
+	--color-primary-400-10: #7eadd61a;
+	--color-primary-400-70: #7eadd6b3;
+	--color-primary-200-50: #d2e5f880;
+	--color-primary-950-20: #e2eef933;
+	/* Text on accent backgrounds, including primary buttons and selected menus. */
+	--color-primary-text-100: #172d43;
+
+	/* UI font and code font can be chosen independently; no font downloads needed. */
+	--font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	--font-mono: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+	--font-weight-normal: 400;
+
+	/* Targeted overrides change these parts without changing the whole palette. */
+	--side-bg-color: var(--color-bg-700);
+	--link-color: var(--color-primary-700);
+	--link-hover-color: #284f72;
+	--selection-bg: var(--color-primary-200);
+	--selection-fg: var(--color-text-100);
+
+	/* Keep button text readable on both its normal and hover backgrounds. */
+	--button-primary-bg-color: var(--color-primary-600);
+	--button-primary-border-color: var(--button-primary-bg-color);
+	--button-primary-fg-color: var(--color-primary-text-100);
+	--button-primary-bg-hover-color: var(--color-primary-400);
+	--button-primary-border-hover-color: var(--button-primary-bg-hover-color);
+}

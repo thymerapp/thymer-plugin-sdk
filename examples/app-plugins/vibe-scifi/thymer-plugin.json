@@ -1,0 +1,13 @@
+{
+  "id": "thymer.examples.vibe-scifi",
+  "name": "Sci-fi Vibe",
+  "author": "Thymer",
+  "version": "1.0.0",
+  "type": "global",
+  "description": "Demo app plugin that registers a custom vibe: Star Wars-like opening crawl style for Focus Mode.",
+  "homepage": "https://github.com/thymerapp/thymer-plugin-sdk",
+  "files": {
+    "config": "vibe-example.json",
+    "js": "vibe-example.js"
+  }
+}

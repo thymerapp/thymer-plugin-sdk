@@ -1,0 +1,13 @@
+{
+  "id": "thymer.examples.kanban-card-button",
+  "name": "Kanban Button",
+  "author": "Thymer",
+  "version": "1.0.0",
+  "type": "collection",
+  "description": "Kanban board with button example",
+  "homepage": "https://github.com/thymerapp/thymer-plugin-sdk",
+  "files": {
+    "config": "card-button-plugin.json",
+    "js": "card-button-plugin.js"
+  }
+}

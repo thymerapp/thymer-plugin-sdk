@@ -1,0 +1,13 @@
+{
+  "id": "thymer.examples.simple-list-view",
+  "name": "Notes",
+  "author": "Thymer",
+  "version": "1.0.0",
+  "type": "collection",
+  "description": "Simple custom view test",
+  "homepage": "https://github.com/thymerapp/thymer-plugin-sdk",
+  "files": {
+    "config": "listview-plugin.json",
+    "js": "listview-plugin.js"
+  }
+}

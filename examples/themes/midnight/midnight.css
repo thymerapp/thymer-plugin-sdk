@@ -1,0 +1,46 @@
+/* This stylesheet is loaded only while the Midnight variant is selected. */
+html:root {
+	color-scheme: dark;
+
+	--color-bg-50: #cbd5e1;
+	--color-bg-100: #b4c1d2;
+	--color-bg-150: #9aabc1;
+	--color-bg-200: #8295b0;
+	--color-bg-300: #5d7391;
+	--color-bg-400: #405570;
+	--color-bg-500: #2c3d54;
+	--color-bg-600: #223148;
+	--color-bg-700: #1b293d;
+	--color-bg-800: #162235;
+	--color-bg-900: #111c2d;
+	--color-bg-950: #0d1726;
+	--color-bg-500-50: #2c3d5480;
+	--color-bg-950-50: #0d1726a6;
+
+	--color-primary-50: #eff8ff;
+	--color-primary-100: #dcefff;
+	--color-primary-200: #bbdffc;
+	--color-primary-300: #93c8ef;
+	--color-primary-400: #79b6e4;
+	--color-primary-500: #609ed1;
+	--color-primary-600: #4a7da9;
+	--color-primary-700: #375f83;
+	--color-primary-800: #284761;
+	--color-primary-900: #1c3145;
+	--color-primary-950: #122132;
+	--color-primary-400-70: #79b6e4b3;
+	--color-primary-950-20: #12213299;
+	--color-primary-text-100: #0d1726;
+
+	--color-text-50: #f1f5fa;
+	--color-text-100: #e4edf7;
+	--color-text-200: #d5e1ef;
+	--color-text-300: #c6d4e5;
+	--color-text-400: #b5c5db;
+	--color-text-500: #9fb2cc;
+	--color-text-600: #879cb8;
+	--color-text-700: #7085a2;
+	--color-text-800: #5a6c87;
+	--color-text-900: #3c4d66;
+	--color-text-950: #25344b;
+}

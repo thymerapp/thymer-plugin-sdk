@@ -37,9 +37,22 @@ class AppPlugin {
     public onUnload(): void;
     /**
      * @public
+     *
+     * This is called when a thymer:// plugin-action URL targets the plugin's loaded workspace.
+     * @param {PluginProtocolAction} action
+     */
+    public onProtocolAction(action: PluginProtocolAction): void;
+    /**
+     * @public
      * Functions to interact with the UI.
      */
     public ui: UIAPI;
+    /**
+     * @public
+     * Desktop app integration.
+     * @type {DesktopWindowAPI}
+     */
+    public window: DesktopWindowAPI;
     /**
      * @public
      * Functions to interact with data.
@@ -94,6 +107,8 @@ const COLLECTION_VIEW_CALENDAR: "calendar";
 const COLLECTION_VIEW_CUSTOM: "custom";
 
 const COLLECTION_VIEW_GALLERY: "gallery";
+
+const COLLECTION_VIEW_LIST: "list";
 
 const COLLECTION_VIEW_SINGLE_RECORD: "record";
 
@@ -240,6 +255,13 @@ class CollectionPlugin {
     public onUnload(): void;
     /**
      * @public
+     *
+     * This is called when a thymer:// plugin-action URL targets the plugin's loaded workspace.
+     * @param {PluginProtocolAction} action
+     */
+    public onProtocolAction(action: PluginProtocolAction): void;
+    /**
+     * @public
      * Access to your own collection. Use this to get records, create records,
      * and access collection-level settings.
      *
@@ -263,6 +285,12 @@ class CollectionPlugin {
      * Functions to interact with the UI.
      */
     public ui: UIAPI;
+    /**
+     * @public
+     * Desktop app integration.
+     * @type {DesktopWindowAPI}
+     */
+    public window: DesktopWindowAPI;
     /**
      * @public
      * Functions to interact with data.
@@ -341,7 +369,7 @@ type CollectionView = {
     source_collections?: string[];
 };
 
-type CollectionViewType = "table" | "board" | "gallery" | "calendar" | "record" | "custom";
+type CollectionViewType = "table" | "list" | "board" | "gallery" | "calendar" | "record" | "custom";
 
 class DataAPI {
 
@@ -722,6 +750,89 @@ class DateTime {
  */
 type DateTimeValue = object;
 
+class DesktopWindowAPI {
+
+    /**
+     * @public
+     * Blur the current Thymer desktop window.
+     * @returns {Promise<void>}
+     */
+    public blur(): Promise<void>;
+    /**
+     * @public
+     * Focus the current Thymer desktop window.
+     * @returns {Promise<void>}
+     */
+    public focus(): Promise<void>;
+    /**
+     * @public
+     * Show the current Thymer desktop window.
+     * @returns {Promise<void>}
+     */
+    public show(): Promise<void>;
+    /**
+     * @public
+     * Hide the current Thymer desktop window.
+     * @returns {Promise<void>}
+     */
+    public hide(): Promise<void>;
+    /**
+     * @public
+     * Maximize the current Thymer desktop window.
+     * @returns {Promise<void>}
+     */
+    public maximize(): Promise<void>;
+    /**
+     * @public
+     * Unmaximize the current Thymer desktop window.
+     * @returns {Promise<void>}
+     */
+    public unmaximize(): Promise<void>;
+    /**
+     * @public
+     * Minimize the current Thymer desktop window.
+     * @returns {Promise<void>}
+     */
+    public minimize(): Promise<void>;
+    /**
+     * @public
+     * Restore the current Thymer desktop window from minimized state.
+     * @returns {Promise<void>}
+     */
+    public restore(): Promise<void>;
+    /**
+     * @public
+     * Returns whether the current Thymer desktop window is focused.
+     * @returns {Promise<boolean>}
+     */
+    public isFocused(): Promise<boolean>;
+    /**
+     * @public
+     * Returns whether the current Thymer desktop window is visible.
+     * @returns {Promise<boolean>}
+     */
+    public isVisible(): Promise<boolean>;
+    /**
+     * @public
+     * Returns whether the current Thymer desktop window is maximized.
+     * @returns {Promise<boolean>}
+     */
+    public isMaximized(): Promise<boolean>;
+    /**
+     * @public
+     * Returns whether the current Thymer desktop window is minimized.
+     * @returns {Promise<boolean>}
+     */
+    public isMinimized(): Promise<boolean>;
+    /**
+     * @public
+     * Close the current Thymer desktop window.
+     * @returns {Promise<void>}
+     */
+    public close(): Promise<void>;
+    #private;
+}
+
 /**
  * Base class for Dynamic Collection plugins. Extends the internal DynamicCollectionPlugin
  * (which provides virtual fields, source plugin delegation, and unified field resolution)
@@ -759,6 +870,13 @@ class DynCollectionPlugin {
     public onUnload(): void;
     /**
      * @public
+     *
+     * This is called when a thymer:// plugin-action URL targets the plugin's loaded workspace.
+     * @param {PluginProtocolAction} action
+     */
+    public onProtocolAction(action: PluginProtocolAction): void;
+    /**
+     * @public
      * Access to your own dynamic collection.
      */
     public collection: PluginDynamicCollectionAPI;
@@ -777,6 +895,12 @@ class DynCollectionPlugin {
      * Functions to interact with the UI.
      */
     public ui: UIAPI;
+    /**
+     * @public
+     * Desktop app integration.
+     * @type {DesktopWindowAPI}
+     */
+    public window: DesktopWindowAPI;
     /**
      * @public
      * Functions to interact with data.
@@ -924,107 +1048,6 @@ class EventsAPI {
     public off(handlerId: string): void;
 
     #private;
-}
-
-namespace ExampleConfigurationJSON {
-    let name: string;
-    let icon: string;
-    let description: string;
-    let item_name: string;
-    let ver: number;
-    let show_sidebar_items: boolean;
-    let show_cmdpal_items: boolean;
-    let home: boolean;
-    export namespace default_banner {
-        let guid: string;
-        let name_1: string;
-            { name_1 as name };
-        let imgData: string;
-        let imgClass: string;
-        let imgUrl: any;
-        let error: string;
-    }
-    export namespace sidebar_action {
-        let guid_1: any;
-            { guid_1 as guid };
-        let action: string;
-    }
-    export namespace managed {
-        let fields: boolean;
-        let views: boolean;
-        let sidebar: boolean;
-    }
-    let sidebar_record_sort_field_id: string;
-    let sidebar_record_sort_dir: string;
-    let fields_1: ({
-        id: string;
-        label: string;
-        type: string;
-        icon: string;
-        many: boolean;
-        read_only: boolean;
-        active: boolean;
-        choices?: undefined;
-    } | {
-        id: string;
-        label: string;
-        type: string;
-        icon: string;
-        many: boolean;
-        read_only: boolean;
-        active: boolean;
-        choices: {
-            id: string;
-            label: string;
-            icon: string;
-            active: boolean;
-            color: string;
-        }[];
-    })[];
-        { fields_1 as fields };
-    let views_1: ({
-        id: string;
-        label: string;
-        description: string;
-        icon: string;
-        type: string;
-        shown: boolean;
-        read_only: boolean;
-        field_ids: string[];
-        sort_field_id: string;
-        sort_dir: string;
-        group_by_field_id: string;
-        query: string;
-        opts: {
-            date_field_id?: undefined;
-        };
-    } | {
-        id: string;
-        label: string;
-        description: string;
-        icon: string;
-        type: string;
-        shown: boolean;
-        read_only: boolean;
-        field_ids: string[];
-        sort_field_id: string;
-        sort_dir: string;
-        group_by_field_id: any;
-        query: string;
-        opts: {
-            date_field_id: string;
-        };
-    })[];
-        { views_1 as views };
-    export namespace custom {
-        let api_key: string;
-        let webhook_url: string;
-        export namespace settings {
-            let auto_assign: boolean;
-            let notifications_enabled: boolean;
-            let default_priority: string;
-        }
-    }
 }
 
 const GALLERY_STYLE_COVER: "cover";
@@ -1318,8 +1341,6 @@ const PLUGIN_LINE_ITEM_TYPE_ASCII_BANNER: "ascii-banner";
 
 const PLUGIN_LINE_ITEM_TYPE_BLOCK: "block";
 
-const PLUGIN_LINE_ITEM_TYPE_BR: "br";
-
 const PLUGIN_LINE_ITEM_TYPE_COLLECTION: "app";
 
 const PLUGIN_LINE_ITEM_TYPE_EMPTY: "empty";
@@ -1378,7 +1399,6 @@ const PLUGIN_TASK_STATUS_IMPORTANT: "important";
  * PLUGIN_LINE_ITEM_TYPE_RECORD|
  * PLUGIN_LINE_ITEM_TYPE_EMPTY|
  * PLUGIN_LINE_ITEM_TYPE_ERROR|
- * PLUGIN_LINE_ITEM_TYPE_BR|
  * PLUGIN_LINE_ITEM_TYPE_TEXT|
  * PLUGIN_LINE_ITEM_TYPE_TASK|
  * PLUGIN_LINE_ITEM_TYPE_HEADING|
@@ -1648,6 +1668,22 @@ type PluginConfiguration = {
      * - Optional, not used at the moment (used before property view dropdown was added)
      */
     page_field_ids?: string[];
+    /**
+     * - Custom page-property sets. Filled-in and All are built in and are not stored here.
+     */
+    property_sets?: PropertySet[];
+    /**
+     * - Default page-property rendering. Missing means table for backwards compatibility.
+     */
+    property_style?: "pills" | "table";
+    /**
+     * - Built-in set key or stable custom PropertySet id.
+     */
+    property_set_default?: "filled" | "all" | string;
+    /**
+     * - Properties that remain visible when empty in the Filled-in set.
+     */
+    property_pinned?: string[];
     /**
      * - one of [field.id for field in fields]
      */
@@ -1962,7 +1998,7 @@ class PluginEventLineItem extends PluginEvent {
      * @param {string} collectionGuid
      * @param {string} recordGuid
      * @param {string} lineItemGuid
-     * @param {{parentGuid?: string|null, afterGuid?: string|null, overindent?: number|null, type?: string|null, metaProperties?: {[key: string]: any}|null, properties?: {[key: string]: any}|null, rawSegments?: string[]|null, status?: PluginTaskStatus|null}} fields
+     * @param {{parentGuid?: string|null, afterGuid?: string|null, overindent?: number|null, type?: string|null, metaProperties?: {[key: string]: any}|null, properties?: {[key: string]: any}|null, rawSegments?: import("../../shared/types.js").ItemObject["ts"]|null, status?: PluginTaskStatus|null}} fields
      */
     constructor(eventName: PluginEventName, events: EventsAPI, source: PluginEventSource, collectionGuid: string, recordGuid: string, lineItemGuid: string, fields: {
         parentGuid?: string | null;
@@ -1975,7 +2011,7 @@ class PluginEventLineItem extends PluginEvent {
         properties?: {
             [key: string]: any;
         } | null;
-        rawSegments?: string[] | null;
+        rawSegments?: any["ts"] | null;
         status?: PluginTaskStatus | null;
     });
     /** @type {string|null} - parent item guid */
@@ -2608,18 +2644,18 @@ type PluginLineItemProps = {
 class PluginLineItemSegment {
     /**
      * @param {string} type
-     * @param {string} text
+     * @param {string|Object} text
      */
-    constructor(type: string, text: string);
+    constructor(type: string, text: string | any);
     /** @type {PluginLineItemSegmentType} */
     type: PluginLineItemSegmentType;
-    /** @type {string|object} */
-    text: string | object;
+    /** @type {string|Object} */
+    text: string | any;
 }
 
 type PluginLineItemSegmentType = "text" | "bold" | "italic" | "code" | "link" | "icon" | "hashtag" | "mention" | "ref" | "linkobj" | "datetime";
 
-type PluginLineItemType = "app" | "gplugin" | "document" | "empty" | "error" | "br" | "text" | "task" | "heading" | "ascii-banner" | "quote" | "block" | "olist" | "ulist" | "image" | "file" | "ref" | "table" | "table-cell" | "table-row" | "transclusion" | "query" | "media";
+type PluginLineItemType = "app" | "gplugin" | "document" | "empty" | "error" | "text" | "task" | "heading" | "ascii-banner" | "quote" | "block" | "olist" | "ulist" | "image" | "file" | "ref" | "table" | "table-cell" | "table-row" | "transclusion" | "query" | "media";
 
 type PluginLinkStyle = "flames" | "outline" | "link-icons" | "link-buttons";
 
@@ -3224,6 +3260,18 @@ class PluginProperty {
     public values(): any[];
     #private;
 }
+
+/**
+ * A thymer:// plugin-action URL dispatched to loaded plugins.
+ * Contains all query params, with repeated params as arrays.
+ */
+type PluginProtocolAction = {
+    rawUrl: string;
+    accountHost: string;
+    workspaceGuid: string;
+    action: string;
+    [key: string]: string | string[];
+};
 
 class PluginRecord {
 
@@ -4068,10 +4116,6 @@ type PropertyChoiceOption = {
     id: string;
     label: string;
     icon: string;
-    json?: {
-        avatar?: string | null;
-        displayName?: string | null;
-    };
     /**
      * - color value, always a number for now. see ENUM_COLORS
      */
@@ -4145,6 +4189,21 @@ type PropertyFileValue = {
      * - if this is a compressed/resized version of an image, this points to the original
      */
     original?: PropertyFileValue;
+};
+
+type PropertySet = {
+    /**
+     * - Stable identifier, independent of the editable set name.
+     */
+    id: string;
+    /**
+     * - Case-insensitively unique within the collection.
+     */
+    name: string;
+    /**
+     * - Property field ids. Custom sets may include built-ins other than Icon and Banner. Display order follows the collection property order.
+     */
+    member_ids: string[];
 };
 
 const SIDEBAR_DISPLAY_CUSTOM: "custom";
@@ -4249,6 +4308,7 @@ class UIAPI {
      * @param {HTMLElement} options.attachedTo Element to attach the dropdown to
      * @param {PluginDropdownOption[]} options.options Array of dropdown options
      * @param {string} [options.inputPlaceholder] Placeholder text for the search input (default: "Search...")
+     * @param {boolean} [options.showInputOnMobile] Whether to show the search input on mobile (default: true)
      * @param {number} [options.width] Width of the dropdown in pixels (default: 300)
      * @param {number} [options.extraMarginY] Additional vertical margin from the attached element
      * @returns {PluginDropdown} The created dropdown
@@ -4257,6 +4317,7 @@ class UIAPI {
         attachedTo: HTMLElement;
         options: PluginDropdownOption[];
         inputPlaceholder?: string;
+        showInputOnMobile?: boolean;
         width?: number;
         extraMarginY?: number;
     }): PluginDropdown;
@@ -4421,8 +4482,12 @@ class UIAPI {
      * 	panel.getElement().innerHTML = "Hello World";
      * });
      *
-     * const newPanel = await this.ui.createPanel()
-     * newPanel.navigateToCustomType("my-panel-id");
+     * // Get active panel or create new panel and navigate to our custom panel type
+     * let panel = this.ui.getActivePanel();
+     * if (!panel) {
+     *    panel = await this.ui.createPanel();
+     * }
+     * panel.navigateToCustomType("my-panel-id");
      *
      * @param {string} myPanelId - some unique ID (unique within this plugin) used to identify this panel type
      * @param {(panel: PluginPanel) => void} fn - callback to be called when the panel is loaded

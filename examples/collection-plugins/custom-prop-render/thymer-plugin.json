@@ -1,0 +1,13 @@
+{
+  "id": "thymer.examples.custom-prop-render",
+  "name": "Project Demo",
+  "author": "Thymer",
+  "version": "1.0.0",
+  "type": "collection",
+  "description": "Project management demo with custom rendering and sorting",
+  "homepage": "https://github.com/thymerapp/thymer-plugin-sdk",
+  "files": {
+    "config": "custom-prop-render-plugin.json",
+    "js": "custom-prop-render-plugin.js"
+  }
+}

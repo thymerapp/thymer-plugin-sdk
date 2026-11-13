@@ -1,0 +1,15 @@
+{
+  "id": "thymer.examples.midnight",
+  "name": "Midnight",
+  "author": "Thymer",
+  "version": "1.0.0",
+  "description": "A dark blue theme with soft text and cool blue accents.",
+  "variants": [
+    {
+      "id": "midnight-dark",
+      "name": "Midnight",
+      "appearance": "dark",
+      "css": "midnight.css"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "id": "thymer.examples.filter-dropdown-choices",
+  "name": "Workboard",
+  "author": "Thymer",
+  "version": "1.0.0",
+  "type": "collection",
+  "description": "Filter dropdown choices example",
+  "homepage": "https://github.com/thymerapp/thymer-plugin-sdk",
+  "files": {
+    "config": "filter-dropdown-choices.json",
+    "js": "filter-dropdown-choices.js"
+  }
+}

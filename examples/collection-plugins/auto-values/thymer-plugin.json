@@ -1,0 +1,13 @@
+{
+  "id": "thymer.examples.auto-values",
+  "name": "Example Invoices",
+  "author": "Thymer",
+  "version": "1.0.0",
+  "type": "collection",
+  "description": "Example collection with auto-values: new invoices get Status Pending; when Status is set to Paid, Paid at is set to today.",
+  "homepage": "https://github.com/thymerapp/thymer-plugin-sdk",
+  "files": {
+    "config": "auto-values-plugin.json",
+    "js": "auto-values-plugin.js"
+  }
+}

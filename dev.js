@@ -10,6 +10,7 @@ import fs from 'fs';
 
 const OUT = 'dist/plugin.js';
 const OUT_JSON = 'plugin.json';
+const once = process.argv.includes('--once');
 
 const buildCtx = await esbuild.context({
 	entryPoints : ['plugin.js'],
@@ -17,13 +18,12 @@ const buildCtx = await esbuild.context({
 	format      : 'iife',           // one self-executing bundle
 	globalName  : 'plugins',        // expose the class on globalThis.plugins
 	keepNames   : true,             // keep class name "Plugin"
-	sourcemap   : 'inline',
+	sourcemap   : once ? false : 'inline',
 	loader      : { '.css':'text', '.png':'dataurl', '.avif':'dataurl', '.svg':'dataurl', '.jpg':'dataurl', '.jpeg':'dataurl', '.gif':'dataurl' },
 	outfile     : OUT,
 	write       : true
 });
 
-const once = process.argv.includes('--once');
 const printCode = process.argv.includes('--print-code');
 
 if (once) { await buildCtx.rebuild(); process.exit(0); }
@@ -150,4 +150,3 @@ chokidar.watch([OUT, OUT_JSON]).on('change', (filePath) => {
 		console.error('❌ Error reading files:', error);
 	}
 });
-

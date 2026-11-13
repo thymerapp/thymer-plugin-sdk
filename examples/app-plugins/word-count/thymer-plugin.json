@@ -1,0 +1,13 @@
+{
+  "id": "thymer.examples.word-count",
+  "name": "Word Count",
+  "author": "Thymer",
+  "version": "1.0.0",
+  "type": "global",
+  "description": "Shows word count and line count of the active panel's record in the status bar. Demonstrates the Events API: reload + deltas and ignoring events for other records.",
+  "homepage": "https://github.com/thymerapp/thymer-plugin-sdk",
+  "files": {
+    "config": "word-count-plugin.json",
+    "js": "word-count-plugin.js"
+  }
+}

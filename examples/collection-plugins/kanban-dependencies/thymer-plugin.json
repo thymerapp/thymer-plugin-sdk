@@ -1,0 +1,13 @@
+{
+  "id": "thymer.examples.kanban-dependencies",
+  "name": "Dependencies Demo",
+  "author": "Thymer",
+  "version": "1.0.0",
+  "type": "collection",
+  "description": "Kanban board with dependencies example",
+  "homepage": "https://github.com/thymerapp/thymer-plugin-sdk",
+  "files": {
+    "config": "kanban-dependencies-plugin.json",
+    "js": "kanban-dependencies-plugin.js"
+  }
+}

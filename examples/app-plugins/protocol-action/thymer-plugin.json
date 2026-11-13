@@ -1,0 +1,13 @@
+{
+  "id": "thymer.examples.protocol-action",
+  "name": "Protocol Action Demo",
+  "author": "Thymer",
+  "version": "1.0.0",
+  "type": "global",
+  "description": "Receives thymer:// plugin-action URLs and shows a toast",
+  "homepage": "https://github.com/thymerapp/thymer-plugin-sdk",
+  "files": {
+    "config": "protocol-action-plugin.json",
+    "js": "protocol-action-plugin.js"
+  }
+}

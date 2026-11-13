@@ -1,13 +1,14 @@
 /**
 *
-* NOTE: if you want to try this example right away without development project, create a new Plugin in Thymer 
-* (Command Palette -> Plugins -> Create Plugin) and paste in the code from _another file_ in this directory: 
-* 'pacman-cursor-plugin-dist.js'. The current file (pacman-cursor-plugin.js) only works together with the 
-* 'npm run dev' dev build loop for development. See the SDK's README.md for more details.
+* NOTE: to try this example without a development project, copy the Raw URL of this directory's
+* 'thymer-plugin.json' into Thymer's Plugins -> Install from URL, then Open Draft -> Preview -> Save.
+* Alternatively, create a Global Plugin and paste 'pacman-cursor-plugin-dist.js' into Custom Code and
+* 'robot-cursor-plugin.json' into Configuration, then Preview -> Save. The current file is development
+* source: use 'npm run dev' or 'npm run build' with its image asset. See examples/README.md for setup.
 *
 * ***
 * 
-* Example plugin which turns your cursor into a walking robot!
+* Example plugin which turns your cursor into Pac-Man!
 *
 * Note: just a fun demo to demonstrate a few concepts but obviously a bit of a hack, don't expect a 
 * polished well-tested experience ;)

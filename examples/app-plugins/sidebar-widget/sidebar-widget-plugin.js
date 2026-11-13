@@ -14,10 +14,7 @@
 * - Returning a cleanup function for proper teardown
 */
 
-/** don't copy 'export' when copy-pasting directly into Custom Code field in Thymer */
-export 
-/* -- */
-class Plugin extends AppPlugin {
+export class Plugin extends AppPlugin {
 
 	onLoad() {
 		this.ui.injectCSS(`

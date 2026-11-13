@@ -1,0 +1,71 @@
+/* Loaded only for Ocean Dark; other styles inherit Thymer's default dark theme. */
+html:root {
+	color-scheme: dark;
+
+	/* Background palette: higher numbers are darker in this dark variant. */
+	--color-bg-50: #cbd5e1;
+	--color-bg-100: #b4c1d2;
+	--color-bg-150: #9aabc1;
+	--color-bg-200: #8295b0;
+	--color-bg-300: #5d7391;
+	--color-bg-400: #405570;
+	--color-bg-500: #2c3d54;
+	--color-bg-600: #223148;
+	--color-bg-700: #1b293d;
+	--color-bg-800: #162235;
+	--color-bg-900: #111c2d;
+	--color-bg-950: #0d1726;
+	--color-bg-500-50: #2c3d5480;
+	--color-bg-950-50: #0d172680;
+
+	/* Text palette: lower numbers give stronger contrast against dark surfaces. */
+	--color-text-50: #f1f5fa;
+	--color-text-100: #e4edf7;
+	--color-text-200: #d5e1ef;
+	--color-text-300: #c6d4e5;
+	--color-text-400: #b5c5db;
+	--color-text-500: #a7bad1;
+	--color-text-600: #9aadc4;
+	--color-text-700: #8fa2ba;
+	--color-text-800: #8397b0;
+	--color-text-900: #667b96;
+	--color-text-950: #41556f;
+
+	/* Accents used by links, buttons, selected items, and focus indicators. */
+	--color-primary-50: #eff8ff;
+	--color-primary-100: #dcefff;
+	--color-primary-200: #bbdffc;
+	--color-primary-300: #93c8ef;
+	--color-primary-400: #79b6e4;
+	--color-primary-500: #609ed1;
+	--color-primary-600: #4a7da9;
+	--color-primary-700: #375f83;
+	--color-primary-800: #284761;
+	--color-primary-900: #1c3145;
+	--color-primary-950: #122132;
+	--color-primary-400-10: #79b6e41a;
+	--color-primary-400-70: #79b6e4b3;
+	--color-primary-200-50: #bbdffc80;
+	--color-primary-950-20: #12213233;
+	/* Selected menus use dark accent backgrounds, so their text stays light. */
+	--color-primary-text-100: #e4edf7;
+
+	/* UI font and code font can be chosen independently; no font downloads needed. */
+	--font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	--font-mono: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+	--font-weight-normal: 400;
+
+	/* Targeted overrides change these parts without changing the whole palette. */
+	--side-bg-color: var(--color-bg-700);
+	--link-color: var(--color-primary-500);
+	--link-hover-color: var(--color-primary-300);
+	--selection-bg: var(--color-primary-700);
+	--selection-fg: var(--color-text-100);
+
+	/* Bright buttons need dark text, independently of text on selected menus. */
+	--button-primary-bg-color: var(--color-primary-400);
+	--button-primary-border-color: var(--button-primary-bg-color);
+	--button-primary-fg-color: var(--color-bg-950);
+	--button-primary-bg-hover-color: var(--color-primary-300);
+	--button-primary-border-hover-color: var(--button-primary-bg-hover-color);
+}

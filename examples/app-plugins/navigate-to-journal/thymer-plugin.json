@@ -1,0 +1,13 @@
+{
+  "id": "thymer.examples.navigate-to-journal",
+  "name": "Navigate to Journal",
+  "author": "Thymer",
+  "version": "1.0.0",
+  "type": "global",
+  "description": "Click on status bar icon to open journal",
+  "homepage": "https://github.com/thymerapp/thymer-plugin-sdk",
+  "files": {
+    "config": "navigate-to-journal-plugin.json",
+    "js": "navigate-to-journal-plugin.js"
+  }
+}

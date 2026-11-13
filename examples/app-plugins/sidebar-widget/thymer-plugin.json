@@ -1,0 +1,13 @@
+{
+  "id": "thymer.examples.sidebar-widget",
+  "name": "Sidebar Widget Demo (Sloppy)",
+  "author": "Thymer",
+  "version": "1.0.0",
+  "type": "global",
+  "description": "Demo plugin showing how to add a sidebar widget — a little buddy whose eyes follow your cursor and who celebrates when you complete tasks",
+  "homepage": "https://github.com/thymerapp/thymer-plugin-sdk",
+  "files": {
+    "config": "sidebar-widget-plugin.json",
+    "js": "sidebar-widget-plugin.js"
+  }
+}

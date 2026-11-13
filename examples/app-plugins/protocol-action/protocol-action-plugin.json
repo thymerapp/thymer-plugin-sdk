@@ -1,0 +1,6 @@
+{
+	"ver": 1,
+	"name": "Protocol Action Demo",
+	"icon": "ti-link",
+	"description": "Receives thymer:// plugin-action URLs and shows a toast"
+}

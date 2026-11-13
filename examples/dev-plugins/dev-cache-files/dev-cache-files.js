@@ -15,8 +15,9 @@
  *   for any debug envrionments or dev tools is still on the roadmap, so this is just meant as a preview of what's to come.
  * 
  * Install & Usage:
- * - In Thymer, open the Command Palette and select "Plugins"
- * - Copy-paste contents of export-plugin.js in Custom Code and export-plugin.json in Configuration, Save.
+ * - In Thymer, open Plugins -> Install from URL and paste the Raw URL of this directory's thymer-plugin.json.
+ * - Choose Open Draft -> Preview -> Save to install the browser-side exporter.
+ * - Alternatively, create a Global Plugin and paste export-plugin.js in Custom Code and export-plugin.json in Configuration, then Preview -> Save.
  * - See this SDK's README.md "Quick Start" section on how to start the debugger
  * - Run 'npm run dev:cache-files' to cache the contents of your Thymer workspace as flat files into the "cache" directory.
  * - cache/*.md will now contain notes from your Thymer workspace.
@@ -63,9 +64,9 @@ try {
 		console.error('');
 		console.error('Please install the dev-cache-files global plugin first:');
 		console.error('  1. In Thymer, open the Command Palette and select "Plugins"');
-        console.error('  2. Under "Global Plugins", Click "Create Plugin"');
-		console.error('  3. Paste the contents of examples/dev-plugins/dev-cache-files/export-plugin.js to Custom Code (and export-plugin.json to Configuration)');
-		console.error('  4. Save the plugin');
+		console.error('  2. Choose "Install from URL" and paste the Raw URL of examples/dev-plugins/dev-cache-files/thymer-plugin.json');
+		console.error('  3. Choose Open Draft -> Preview -> Save');
+		console.error('  See examples/README.md for setup and manual installation instructions.');
 		console.error('');
 		await chrome.close();
 		process.exit(1);
