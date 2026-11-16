@@ -3849,7 +3849,7 @@ class PluginViewConfig {
      * @public
      * Get the sort direction for this view.
      *
-     * @returns {import("./plugin_api.js").PluginSortDir}
+     * @returns {PluginSortDir}
      */
     public getSortDirection(): PluginSortDir;
     #private;
@@ -4561,9 +4561,13 @@ class UIAPI {
     /**
      * @public
      * Get the current theme configuration (light/dark slot ids and appearance).
-     * @returns {import("../../shared/types.js").ThemeConfig?}
+     * @returns {{light: string, dark: string, appearance: 'light'|'dark'|'auto'}|null}
      */
-    public getCurrentTheme(): any | null;
+    public getCurrentTheme(): {
+        light: string;
+        dark: string;
+        appearance: "light" | "dark" | "auto";
+    } | null;
     /**
      * @public
      * Set the current theme by theme ID (e.g. "thymer-dark-neon-noir"). Saves for the active user when logged in.

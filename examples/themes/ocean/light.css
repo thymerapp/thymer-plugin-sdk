@@ -3,7 +3,7 @@ html:root {
 	color-scheme: light;
 
 	/* Background palette: higher numbers are lighter in this light variant. */
-	--color-bg-50: #536d87;
+	--color-bg-50: #536d88;
 	--color-bg-100: #698099;
 	--color-bg-150: #7d91a7;
 	--color-bg-200: #8fa2b6;
