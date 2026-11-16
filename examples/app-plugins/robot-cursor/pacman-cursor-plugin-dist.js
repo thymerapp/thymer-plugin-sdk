@@ -40,6 +40,7 @@ var plugins = (() => {
 			}
 			div.listview-caret-self {
 				border: none !important;
+        box-shadow: none !important;
 				margin: 0px !important;
 				background-color: transparent !important;
 				animation: blink 1s infinite !important;

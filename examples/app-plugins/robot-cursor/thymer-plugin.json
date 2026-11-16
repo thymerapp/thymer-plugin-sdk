@@ -2,7 +2,7 @@
   "id": "thymer.examples.pacman-cursor",
   "name": "Cursor Fun Demo",
   "author": "Thymer",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "global",
   "description": "Turns the text cursor into an animated Pac-Man. Includes the built JavaScript and image.",
   "homepage": "https://github.com/thymerapp/thymer-plugin-sdk",

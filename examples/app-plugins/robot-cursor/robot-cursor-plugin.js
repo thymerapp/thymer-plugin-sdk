@@ -28,6 +28,7 @@ export class Plugin extends AppPlugin {
 				margin: 0px !important;
 				background-color: transparent !important;
 				animation: blink 1s infinite !important;
+				box-shadow: none !important;
 			}
 			div.listview-caret-self::after {
 				content: '';
