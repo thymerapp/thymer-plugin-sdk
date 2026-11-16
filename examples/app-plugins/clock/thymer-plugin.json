@@ -2,7 +2,7 @@
   "id": "thymer.examples.clock",
   "name": "Clock Plugin Demo",
   "author": "Thymer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "global",
   "description": "Demo plugin for the App Plugin SDK",
   "homepage": "https://github.com/thymerapp/thymer-plugin-sdk",

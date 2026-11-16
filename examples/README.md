@@ -4,11 +4,11 @@ These examples cover global app plugins, collection plugins, themes, and develop
 
 ## Install a ready-to-run example
 
-The examples below include `thymer-plugin.json` with their name, author, version, plugin type, and source file paths. You can install them from a URL or use manual source editing and Hot Reload.
+The examples below include install manifests with their name, author, version, plugin type, and source file paths. Most use `thymer-plugin.json`; the robot cursor uses `thymer-plugin-robot.json` because it shares a directory with Pac-Man. You can install them from a URL or use manual source editing and Hot Reload.
 
 1. Open the example's **Manifest** link below on GitHub and copy the URL from your address bar.
 2. As a workspace administrator, open Thymer's **Plugins** panel from the Command Palette and choose **Add plugin → Install from URL**.
-3. Paste the URL and click **Load Plugin** to open the editor, then choose **Preview → Save**. Preview runs the code; Discard removes the new draft.
+3. Paste the URL, click **Load Plugin**, review the details, then choose **Install**. The plugin is installed for everyone in the workspace.
 4. Try the action listed below. A collection example creates a new collection; add your own sample records to it.
 
 Use the manifest's GitHub file URL or Raw URL for these examples. The SDK repository contains multiple plugins in subdirectories, so pasting just the SDK repository URL will not select an example.
@@ -21,6 +21,7 @@ Use the manifest's GitHub file URL or Raw URL for these examples. The SDK reposi
 | Navigate to Journal | Global | [Manifest](app-plugins/navigate-to-journal/thymer-plugin.json) | In a workspace with a Journal, click the calendar status button. The demo adds a task to next week's journal and opens it. |
 | Protocol Action Demo | Global | [Manifest](app-plugins/protocol-action/thymer-plugin.json) | Click **Protocol demo** in the status bar and open the generated `thymer://` link in Thymer Desktop to see a toast. |
 | Pac-Man Cursor | Global | [Manifest](app-plugins/robot-cursor/thymer-plugin.json) | Type in a page to see the animated cursor. This installs the bundled Pac-Man variant, named **Cursor Fun Demo**. |
+| Robot Cursor | Global | [Manifest](app-plugins/robot-cursor/thymer-plugin-robot.json) | Type in a page to see the walking robot cursor. This installs the bundled robot variant, named **Cursor Fun Demo**. |
 | Sci-fi Vibe | Global | [Manifest](app-plugins/vibe-scifi/thymer-plugin.json) | Choose **Sci-fi Opening Crawl** in the vibe picker for Focus Mode. |
 | Sidebar Widget (Sloppy) | Global | [Manifest](app-plugins/sidebar-widget/thymer-plugin.json) | Move your cursor to make the sidebar character look around, then complete tasks to see its celebrations. |
 | Weather | Global | [Manifest](app-plugins/weather/thymer-plugin.json) | See Amsterdam's weather in the status bar; click it to refresh. Fetches data from Open-Meteo at runtime. |
@@ -43,7 +44,7 @@ You can still try these examples manually: create a Global Plugin or a new colle
 
 Self-contained examples can keep `export class Plugin extends AppPlugin` or `export class Plugin extends CollectionPlugin`: Thymer's loader accepts these declarations. They do not need a build just because they use `export`.
 
-For examples installed from a URL, **Plugins → Check for updates** checks both global and collection plugins. A newer published version adds an **Update** action to the tile. Review the update, then choose **Open Draft → Preview → Save**, with a warning before replacing locally edited JavaScript or CSS. See [how updates work](../README.md#updating-installed-plugins).
+For examples installed from a URL, **Plugins → Check for updates** checks both global and collection plugins. A newer published version adds an **Update** action to the tile. Review the details, then confirm with **Update**. Thymer warns before replacing locally edited JavaScript or CSS. See [how updates work](../README.md#updating-installed-plugins).
 
 ## Theme examples
 
@@ -69,7 +70,7 @@ and [Designing your theme](themes/README.md#designing-your-theme).
 
 ## Build the source examples
 
-The sources below import JavaScript modules, CSS, or images and need bundling before installation. They intentionally have no install manifest pointing at those source files. Thymer does not run the SDK build during installation. The Pac-Man example already has a manifest pointing at its included bundle.
+The sources below import JavaScript modules, CSS, or images and need bundling before installation. They intentionally have no install manifest pointing at those source files. Thymer does not run the SDK build during installation. The Pac-Man and robot cursor examples already have separate manifests pointing at their included bundles.
 
 Use a fresh SDK checkout for experimenting. From its root, copy one example's entry file to `plugin.js` and its configuration to `plugin.json`. Copy any listed assets alongside them, keeping the imported filenames. For example, to build the CSS imports demo:
 
@@ -92,9 +93,9 @@ All filenames below are relative to the linked example directory.
 | [Pac-Man cursor source](app-plugins/robot-cursor/) | Global | `pacman-cursor-plugin.js` | `robot-cursor-plugin.json` | `pacman-8f2.png` |
 | [Globe view](collection-plugins/globe-view/) | Collection | `globe-plugin.js` | `globe-plugin.json` | `globe.js`, `earth_atmos_4096.avif`; also loads remote resources at runtime |
 
-Pac-Man already includes a built `pacman-cursor-plugin-dist.js`, so you can install it using the manifest above without building. Its sibling robot source is a separate variant that needs a build.
+Pac-Man includes a built `pacman-cursor-plugin-dist.js`, and the robot cursor includes `robot-cursor-plugin-dist.js`, so you can install either using its manifest above without building.
 
-To develop one of the ready-to-run examples using the SDK, copy the script and configuration named in its manifest to the SDK root as `plugin.js` and `plugin.json`. Keep an existing `export class Plugin` declaration; if it uses plain `class Plugin`, add `export` in that development copy so the SDK build exposes the class. For Pac-Man, use the source and image listed above instead of the existing bundle.
+To develop one of the ready-to-run examples using the SDK, copy the script and configuration named in its manifest to the SDK root as `plugin.js` and `plugin.json`. Keep an existing `export class Plugin` declaration; if it uses plain `class Plugin`, add `export` in that development copy so the SDK build exposes the class. For either cursor example, use the source and image listed above instead of the existing bundle.
 
 ### Distributing a built example
 

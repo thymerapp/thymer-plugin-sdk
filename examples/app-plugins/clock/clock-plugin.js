@@ -23,7 +23,8 @@ export class Plugin extends AppPlugin {
 			});
 			
 			// Add blinking colon effect
-			const colonVisible = Math.floor(Date.now() / 1000) % 2 === 0;
+			//const colonVisible = Math.floor(Date.now() / 1000) % 2 === 0;
+			const colonVisible = false;
 			const displayTime = timeString.replace(':', colonVisible ? ':' : ' ');
 			
 			if (this.timeStatusItem) {

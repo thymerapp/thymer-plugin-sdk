@@ -194,8 +194,8 @@ Publish the files in a public GitHub repository or on an HTTPS host that allows 
 To install:
 
 1. As a workspace administrator, open **Plugins → Add plugin → Install from URL** and paste the URL.
-2. Choose **Load Plugin** to open the plugin in the editor.
-3. Choose **Preview** to run the plugin, then **Save** to keep it or **Discard** to remove the draft.
+2. Choose **Load Plugin** to see its description, author, and version.
+3. Choose **Install** to install it for everyone in the workspace.
 
 Installation creates a new global plugin or collection. It does not modify an existing collection.
 
@@ -211,11 +211,11 @@ The `id` identifies your plugin; the manifest URL tells Thymer where to find upd
 
 ### Updating installed plugins
 
-Choose **Plugins → Check for updates** to check global and collection plugins installed using a manifest. When a newer release is available, choose **Update**, review it, then **Open Draft → Preview → Save**. Updates are never installed automatically. Plugins installed without a manifest or created by manually pasting source are not included in update checks.
+Choose **Plugins → Check for updates** to check global and collection plugins installed using a manifest. When a newer release is available, choose **Update**, review the details, then confirm with **Update**. Updates apply to everyone in the workspace and are never installed automatically. Plugins installed without a manifest or created by manually pasting source are not included in update checks.
 
-Thymer warns before replacing locally edited JavaScript or CSS and preserves local configuration where possible. Collection records are not replaced by an update. **Discard** restores the installed source and configuration.
+Thymer warns before replacing locally edited JavaScript or CSS and preserves local configuration where possible. Collection records are not replaced by an update. Cancelling leaves the installed plugin unchanged.
 
-**Preview runs the plugin's code.** Discarding a draft cannot undo workspace changes made by that code.
+Only install plugins you trust: their code can access and change workspace data. Loading the details does not run the downloaded code; confirming **Install** or **Update** does.
 
 ## Tips
 
