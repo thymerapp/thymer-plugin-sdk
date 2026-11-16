@@ -8,7 +8,7 @@ The examples below include `thymer-plugin.json` with their name, author, version
 
 1. Open the example's **Manifest** link below on GitHub and copy the URL from your address bar.
 2. As a workspace administrator, open Thymer's **Plugins** panel from the Command Palette and choose **Add plugin → Install from URL**.
-3. Paste the URL and click **Load Plugin**. Review the package, then choose **Open Draft → Preview → Save**. Preview runs the code; Discard removes the new draft.
+3. Paste the URL and click **Load Plugin** to open the editor, then choose **Preview → Save**. Preview runs the code; Discard removes the new draft.
 4. Try the action listed below. A collection example creates a new collection; add your own sample records to it.
 
 Use the manifest's GitHub file URL or Raw URL for these examples. The SDK repository contains multiple plugins in subdirectories, so pasting just the SDK repository URL will not select an example.
@@ -43,7 +43,7 @@ You can still try these examples manually: create a Global Plugin or a new colle
 
 Self-contained examples can keep `export class Plugin extends AppPlugin` or `export class Plugin extends CollectionPlugin`: Thymer's loader accepts these declarations. They do not need a build just because they use `export`.
 
-For examples installed from a URL, **Plugins → Check for updates** checks both global and collection plugins. A newer published version adds an **Update** action to the tile. Updates use the same review and **Open Draft → Preview → Save** flow, with a warning before replacing locally edited JavaScript or CSS. See [how updates work](../README.md#updating-installed-plugins).
+For examples installed from a URL, **Plugins → Check for updates** checks both global and collection plugins. A newer published version adds an **Update** action to the tile. Review the update, then choose **Open Draft → Preview → Save**, with a warning before replacing locally edited JavaScript or CSS. See [how updates work](../README.md#updating-installed-plugins).
 
 ## Theme examples
 

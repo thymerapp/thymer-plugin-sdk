@@ -81,7 +81,7 @@ or on macOS:
 
 - Open Thymer running in your debugging Chrome Window from the step above.
 - Press Cmd+P/Ctrl+P to bring up the Command Palette, select "Plugins".
-- Find your Global/Collection Plugin. To get started with a quick test, click "Create Plugin" to create a test Global Plugin.
+- Find your Global/Collection Plugin. To get started with a quick test, click "Add Plugin > Create a Plugin" to create a test Global Plugin.
 - In the Code Editor dialog, select the "Developer Tools" tab.
 - Click "Enable Plugin Hot Reload"
 
@@ -194,7 +194,7 @@ Publish the files in a public GitHub repository or on an HTTPS host that allows 
 To install:
 
 1. As a workspace administrator, open **Plugins → Add plugin → Install from URL** and paste the URL.
-2. Choose **Load Plugin**, review the package, then choose **Open Draft**.
+2. Choose **Load Plugin** to open the plugin in the editor.
 3. Choose **Preview** to run the plugin, then **Save** to keep it or **Discard** to remove the draft.
 
 Installation creates a new global plugin or collection. It does not modify an existing collection.
